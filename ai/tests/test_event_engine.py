@@ -1,15 +1,20 @@
-import time
-
 from ai.events.event_engine import EventEngine
-from ai.events.zone import Zone
-from ai.schemas.event import SecurityEvent
+from ai.events.rules import LoiteringRule
 from ai.schemas.scene import SceneObject, SceneState
 
 
-def create_scene(position):
+def create_scene(
+    timestamp,
+    position,
+    first_seen=0.0,
+    trajectory=None,
+):
+    if trajectory is None:
+        trajectory = [position]
+
     return SceneState(
         camera_id="camera_01",
-        timestamp=time.time(),
+        timestamp=timestamp,
         objects=[
             SceneObject(
                 track_id=1,
@@ -17,54 +22,101 @@ def create_scene(position):
                 position=position,
                 bbox=(0, 0, 10, 10),
                 confidence=0.95,
+                first_seen=first_seen,
+                last_seen=timestamp,
+                trajectory=trajectory,
             )
         ],
     )
 
 
 def main():
-    zone = Zone(
-        zone_id="zone_01",
-        name="Restricted Area",
-        polygon=[
-            (100, 100),
-            (300, 100),
-            (300, 250),
-            (100, 250),
-        ],
+    rule = LoiteringRule(
+        enabled=True,
+        duration_seconds=10.0,
+        movement_threshold=30.0,
+        target_classes=("person",),
     )
 
-    engine = EventEngine(zones=[zone])
+    engine = EventEngine(
+        loitering_rule=rule,
+    )
 
-    # Frame 1: person is outside.
+    # ---------------------------------
+    # Frame 1: person has just appeared
+    # ---------------------------------
+
     events = engine.evaluate(
-        create_scene((50, 50))
+        create_scene(
+            timestamp=2.0,
+            position=(200, 175),
+        )
     )
 
     assert len(events) == 0
 
-    # Frame 2: person enters the restricted zone.
+    # ---------------------------------
+    # Frame 2: only 8 seconds elapsed
+    # ---------------------------------
+
     events = engine.evaluate(
-        create_scene((200, 175))
+        create_scene(
+            timestamp=8.0,
+            position=(205, 178),
+            trajectory=[
+                (200, 175),
+                (205, 178),
+            ],
+        )
+    )
+
+    assert len(events) == 0
+
+    # ---------------------------------
+    # Frame 3: 10+ seconds, little movement
+    # ---------------------------------
+
+    events = engine.evaluate(
+        create_scene(
+            timestamp=10.5,
+            position=(210, 180),
+            trajectory=[
+                (200, 175),
+                (205, 178),
+                (210, 180),
+            ],
+        )
     )
 
     assert len(events) == 1
 
     event = events[0]
 
-    assert isinstance(event, SecurityEvent)
-    assert event.event_type == "INTRUSION"
+    assert event.event_type == "LOITERING"
     assert event.track_id == 1
-    assert event.severity == "high"
+    assert event.severity == "medium"
 
-    # Frame 3: person remains inside.
+    # ---------------------------------
+    # Frame 4: still there
+    # No duplicate event
+    # ---------------------------------
+
     events = engine.evaluate(
-        create_scene((220, 180))
+        create_scene(
+            timestamp=15.0,
+            position=(212, 182),
+            trajectory=[
+                (200, 175),
+                (205, 178),
+                (210, 180),
+                (212, 182),
+            ],
+        )
     )
 
     assert len(events) == 0
 
-    print("Intrusion entry detection test: PASSED")
+    print("Loitering detection test: PASSED")
 
 
 if __name__ == "__main__":

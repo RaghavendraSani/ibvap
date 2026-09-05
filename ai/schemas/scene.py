@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
-
+from dataclasses import dataclass, field
 
 @dataclass
 class SceneObject:
@@ -10,6 +10,13 @@ class SceneObject:
 
     bbox: Tuple[float, float, float, float]
     confidence: float
+
+    first_seen: float
+    last_seen: float
+
+    trajectory: List[Tuple[float, float]] = field(
+        default_factory=list
+    )
 
     zone: Optional[str] = None
     speed: Optional[float] = None
