@@ -27,6 +27,7 @@ class TrackState:
     plate_status: str = "not_processed"
     plate_number: Optional[str] = None
     watchlist_status: Optional[str] = None
+    missed_frames: int = 0
 
     @property
     def center(self) -> Tuple[float, float]:
