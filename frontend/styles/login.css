@@ -1,0 +1,170 @@
+/* ==========================================================================
+   CHIC & SUBTLE DEFENSE TERMINAL LOGIN STYLES
+   Sharp & Shiny Golden Defense Terminal using Strict User Design Tokens:
+   - Gold: var(--gold) #CAAA62, var(--gold-bright) #D8BA6A, var(--gold-dark) #8F753F
+   - Surface: var(--bg) #080908, var(--panel) #101110, var(--border) #2A2924
+   - Typography: var(--text-primary) #E8E5DC, var(--text-secondary) #96938A
+   - 100% SHARP EDGES (border-radius: 0px) & Zero Shadows
+   ========================================================================== */
+
+.login-screen-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg);
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(244, 243, 238, 0.88) 0%, rgba(230, 227, 219, 0.97) 100%),
+    url('/loading.jpg');
+  background-size: cover;
+  background-position: center;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.login-screen-container.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Sharp Terminal Card */
+.chic-login-card {
+  position: relative;
+  width: min(88vw, 320px);
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--gold);
+  border-radius: 0px !important;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 26px 28px 26px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Header */
+.login-header-block {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.login-title {
+  font-family: 'Anton', 'Oswald', sans-serif;
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-green);
+  -webkit-text-stroke: 1.2px var(--gold);
+  paint-order: stroke fill;
+  line-height: 1.1;
+}
+
+/* Form Body */
+.login-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.field-input {
+  width: 100%;
+  background: #FAF9F6;
+  border: 1px solid var(--border);
+  border-radius: 0px !important;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  padding: 10px 12px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.field-input:focus {
+  background: #FFFFFF;
+  border-color: var(--gold);
+}
+
+/* Auth Status Toast */
+.login-auth-status {
+  display: none;
+  font-size: 0.7rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.04em;
+  min-height: 16px;
+  margin-top: -2px;
+  margin-bottom: -2px;
+}
+
+.login-auth-status.active {
+  display: block;
+}
+
+.login-auth-status.error {
+  color: var(--critical);
+}
+
+.login-auth-status.success {
+  color: var(--success);
+}
+
+.login-auth-status.info {
+  color: var(--gold);
+}
+
+/* Primary Shiny Gold Button */
+.btn-chic-auth {
+  width: 100%;
+  height: 38px;
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+  border: 1px solid var(--gold);
+  border-radius: 0px !important;
+  color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.btn-chic-auth:hover {
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold-bright) 50%, var(--gold) 100%);
+  border-color: var(--gold-bright);
+}
+
+.btn-chic-auth:active {
+  background: var(--gold-dark);
+}
+
+.btn-chic-auth.authenticating {
+  opacity: 0.7;
+  pointer-events: none;
+}
