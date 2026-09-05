@@ -15,6 +15,8 @@ class TrackedObject:
 
 
 class ObjectTracker:
+    ALLOWED_CLASSES = [0, 1, 2, 3, 5, 7]
+
     def __init__(
         self,
         model_path: str = "ai/models/yolo11n.pt",
@@ -42,6 +44,7 @@ class ObjectTracker:
             source=frame,
             device=self.device,
             conf=self.confidence,
+            classes=self.ALLOWED_CLASSES,
             tracker="bytetrack.yaml",
             persist=True,
             verbose=False,
