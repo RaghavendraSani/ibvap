@@ -12,6 +12,7 @@ from ai.tracking.track_manager import TrackManager
 from ai.tracking.tracker import ObjectTracker
 from ai.ui.zone_editor import ZoneEditor
 from ai.video.capture import VideoCapture
+from ai.incidents.manager import IncidentManager
 
 
 # ==========================================
@@ -460,7 +461,7 @@ def main():
         # Persistent intrusion state
         # ==================================
 
-        active_intrusions = {}
+        incident_manager = IncidentManager()
 
         # ==================================
         # FPS state
@@ -573,76 +574,80 @@ def main():
             )
 
             # ==================================
-            # Update intrusion state
+            # Incident lifecycle
             # ==================================
 
-            for event in events:
-
-                if event.event_type != "INTRUSION":
-                    continue
-
-                if event.track_id is None:
-                    continue
-
-                active_intrusions[
-                    event.track_id
-                ] = event.message
+            incident_manager.process_events(
+                events
+            )
 
             # ==================================
-            # Maintain active intrusions
+            # Resolve incidents whose condition
+            # is no longer active
             # ==================================
 
-            for track_id in list(
-                active_intrusions.keys()
+            for incident in list(
+                    incident_manager.get_active()
             ):
 
-                track = tracks.get(track_id)
+                if incident.event_type != "INTRUSION":
+                    continue
 
-                # --------------------------------
-                # Track completely expired.
-                #
-                # TrackManager handles the
-                # disappearance grace period.
-                # --------------------------------
+                if incident.track_id is None:
+                    continue
 
+                track = tracks.get(
+                    incident.track_id
+                )
+
+                # Track completely disappeared.
                 if track is None:
-
-                    del active_intrusions[
-                        track_id
-                    ]
+                    incident_manager.resolve_track_event(
+                        camera_id=CAMERA_ID,
+                        event_type="INTRUSION",
+                        track_id=incident.track_id,
+                        timestamp=timestamp,
+                    )
 
                     continue
 
-                # --------------------------------
-                # Check whether the object is
-                # currently inside a restricted
-                # zone.
-                # --------------------------------
-
+                # Check whether the tracked object
+                # is still inside any restricted zone.
                 still_inside = False
 
                 for zone in zones:
 
                     if point_in_polygon(
-                        track.center,
-                        zone.polygon,
+                            track.center,
+                            zone.polygon,
                     ):
-
                         still_inside = True
-
                         break
 
-                # --------------------------------
-                # Remove intrusion only after
-                # the tracked object has actually
-                # left the zone.
-                # --------------------------------
-
+                # Object left the restricted area.
                 if not still_inside:
+                    incident_manager.resolve_track_event(
+                        camera_id=CAMERA_ID,
+                        event_type="INTRUSION",
+                        track_id=incident.track_id,
+                        timestamp=timestamp,
+                    )
 
-                    del active_intrusions[
-                        track_id
-                    ]
+            # ==================================
+            # Build persistent intrusion display
+            # ==================================
+
+            active_intrusions = {}
+
+            for incident in incident_manager.get_active():
+
+                if (
+                        incident.event_type == "INTRUSION"
+                        and incident.track_id is not None
+                ):
+                    active_intrusions[
+                        incident.track_id
+                    ] = incident.message
 
             # ==================================
             # FPS
