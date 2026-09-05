@@ -7,11 +7,15 @@
  * - Structured analytics & incident models ready for backend WebSocket / REST API ingestion
  */
 
+import { AnalyticsView } from './analyticsView.js';
+
 export class Dashboard {
   constructor(options = {}) {
     this.container = options.container || document.getElementById('dashboard-root');
     this.onLockTerminal = options.onLockTerminal || null;
     this.onReplayIntro = options.onReplayIntro || null;
+    this.currentView = window.location.hash === '#analytics' ? 'analytics' : 'command';
+    this.analyticsView = new AnalyticsView();
 
     // Default placeholder data matching reference screenshot
     this.analytics = {
@@ -131,7 +135,7 @@ export class Dashboard {
 
           <!-- Navigation Menu Items -->
           <nav class="sidebar-nav-menu">
-            <a href="#command" class="nav-item active" data-view="command">
+            <a href="#command" class="nav-item ${this.currentView === 'command' ? 'active' : ''}" data-view="command">
               <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
@@ -147,7 +151,7 @@ export class Dashboard {
               <span>Live Feed</span>
             </a>
 
-            <a href="#analytics" class="nav-item" data-view="analytics">
+            <a href="#analytics" class="nav-item ${this.currentView === 'analytics' ? 'active' : ''}" data-view="analytics">
               <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="20" x2="18" y2="10"></line>
                 <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -163,7 +167,7 @@ export class Dashboard {
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
               <span>Incidents</span>
-              <span class="nav-badge">7</span>
+              <span class="nav-badge">2</span>
             </a>
 
             <a href="#system" class="nav-item" data-view="system">
@@ -177,6 +181,14 @@ export class Dashboard {
 
           <!-- Bottom Area allowing background soldiers artwork to show through -->
           <div class="sidebar-bottom-spacer"></div>
+
+          <!-- Bottom Tactical Slogan -->
+          <div class="sidebar-motto-credit">
+            <span>SECURER</span>
+            <span>BORDERS</span>
+            <span>STRONGER</span>
+            <span>INDIA</span>
+          </div>
         </aside>
 
         <!-- ===================================================================
@@ -192,6 +204,12 @@ export class Dashboard {
                 Fri, 5 Sep 2026 &nbsp; 22:41:30
               </div>
 
+              <!-- System Online Status Indicator -->
+              <div class="system-status-indicator">
+                <span class="status-pulse-green"></span>
+                <span>System Online</span>
+              </div>
+
               <!-- Notifications Bell -->
               <button class="meta-btn btn-notif" title="Notifications">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -199,6 +217,14 @@ export class Dashboard {
                   <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
                 <span class="notif-badge">3</span>
+              </button>
+
+              <!-- Settings Gear Button -->
+              <button class="meta-btn btn-settings" title="System Settings">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
               </button>
 
               <!-- Officer Profile Pill & Dropdown Anchor -->
@@ -255,9 +281,11 @@ export class Dashboard {
           </header>
 
           <!-- =================================================================
-               TOP ANALYTICS / KPI METRICS ROW (6 INDIVIDUAL CARDS)
+               VIEW 1: COMMAND CONSOLE VIEW PANEL
                ================================================================= -->
-          <section class="dash-metrics-row">
+          <div id="view-command" class="dash-view-panel ${this.currentView === 'command' ? 'active' : ''}">
+            <!-- TOP ANALYTICS / KPI METRICS ROW (5 KPI CARDS) -->
+            <section class="dash-metrics-row">
             <!-- 1. Active Cameras -->
             <div class="kpi-card">
               <div class="kpi-icon-wrap icon-mint">
@@ -506,11 +534,25 @@ export class Dashboard {
             </aside>
           </div>
         </div>
+
+        <!-- =================================================================
+             VIEW 2: ANALYTICS & REPORTS VIEW PANEL
+             ================================================================= -->
+        <div id="view-analytics" class="dash-view-panel ${this.currentView === 'analytics' ? 'active' : ''}">
+          ${this.analyticsView.render()}
+        </div>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   bindEvents() {
+    // 0. Bind Analytics & Reports interactions
+    const analyticsContainer = this.container.querySelector('#view-analytics');
+    if (analyticsContainer && this.analyticsView) {
+      this.analyticsView.bindEvents(analyticsContainer);
+    }
+
     // 1. Profile Dropdown toggle
     const profileBtn = this.container.querySelector('#btn-officer-profile');
     const dropdown = this.container.querySelector('#officer-dropdown');
@@ -569,14 +611,32 @@ export class Dashboard {
       });
     }
 
-    // 6. Navigation tabs active state toggle
+    // 6. Navigation tabs view switching (Command vs Analytics & Reports)
     const navItems = this.container.querySelectorAll('.nav-item');
     navItems.forEach(item => {
       item.addEventListener('click', (e) => {
         e.preventDefault();
-        navItems.forEach(n => n.classList.remove('active'));
-        item.classList.add('active');
+        const view = item.getAttribute('data-view');
+        if (view === 'analytics' || view === 'command') {
+          this.switchView(view);
+        } else {
+          navItems.forEach(n => n.classList.remove('active'));
+          item.classList.add('active');
+          if (view === 'live-feed') {
+            this.switchView('command');
+          }
+        }
       });
+    });
+
+    // Hash navigation listener
+    window.addEventListener('hashchange', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'analytics' || hash === 'command') {
+        if (this.currentView !== hash) {
+          this.switchView(hash);
+        }
+      }
     });
 
     // 7. Sidebar Three Lines Minimize / Maximize Toggle
@@ -618,6 +678,38 @@ export class Dashboard {
         }
       });
     });
+  }
+
+  /**
+   * Switch between Command and Analytics & Reports views
+   */
+  switchView(viewName) {
+    this.currentView = viewName;
+    const navItems = this.container.querySelectorAll('.nav-item');
+    navItems.forEach(n => {
+      if (n.getAttribute('data-view') === viewName) {
+        n.classList.add('active');
+      } else {
+        n.classList.remove('active');
+      }
+    });
+
+    const cmdPanel = this.container.querySelector('#view-command');
+    const anPanel = this.container.querySelector('#view-analytics');
+
+    if (viewName === 'analytics') {
+      if (cmdPanel) cmdPanel.classList.remove('active');
+      if (anPanel) anPanel.classList.add('active');
+      if (window.location.hash !== '#analytics') {
+        history.pushState(null, '', '#analytics');
+      }
+    } else {
+      if (anPanel) anPanel.classList.remove('active');
+      if (cmdPanel) cmdPanel.classList.add('active');
+      if (window.location.hash !== '#command') {
+        history.pushState(null, '', '#command');
+      }
+    }
   }
 
   /**

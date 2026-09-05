@@ -41,7 +41,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // Auto-restore authenticated session if previously logged in or hash is set
-  if (sessionStorage.getItem('ibvap-authenticated') === 'true' || location.hash === '#command') {
+  if (sessionStorage.getItem('ibvap-authenticated') === 'true' || location.hash === '#command' || location.hash === '#analytics') {
     loginRoot.style.display = 'none';
     dashboard.show();
   }
