@@ -1,6 +1,6 @@
-from dataclasses import dataclass
-from typing import List, Optional, Tuple
 from dataclasses import dataclass, field
+from typing import List, Optional, Tuple
+
 
 @dataclass
 class SceneObject:
@@ -18,12 +18,39 @@ class SceneObject:
         default_factory=list
     )
 
+    # ---------------------------------------
+    # Zone / movement information
+    # ---------------------------------------
+
     zone: Optional[str] = None
     speed: Optional[float] = None
     direction: Optional[str] = None
 
+    # ---------------------------------------
+    # Vehicle information
+    # ---------------------------------------
+
     vehicle_type: Optional[str] = None
-    plate: Optional[str] = None
+
+    # ---------------------------------------
+    # ANPR information
+    # ---------------------------------------
+
+    plate_number: Optional[str] = None
+    plate_confidence: Optional[float] = None
+    plate_detection_confidence: Optional[float] = None
+
+    plate_bbox: Optional[
+        Tuple[float, float, float, float]
+    ] = None
+
+    plate_status: str = "not_processed"
+
+    watchlist_status: Optional[str] = None
+
+    # ---------------------------------------
+    # Face / identity information
+    # ---------------------------------------
 
     identity: Optional[str] = None
 
@@ -32,4 +59,6 @@ class SceneObject:
 class SceneState:
     camera_id: str
     timestamp: float
-    objects: List[SceneObject]
+    objects: List[SceneObject] = field(
+        default_factory=list
+    )

@@ -1,16 +1,22 @@
 import time
 
 import cv2
+import numpy as np
 
-from ai.detection.detector import ObjectDetector
+from ai.anpr.manager import ANPRManager
 from ai.events.event_engine import EventEngine
+from ai.events.geometry import point_in_polygon
 from ai.events.rules import LoiteringRule
-from ai.events.zone import Zone
 from ai.pipeline.scene_builder import SceneStateBuilder
 from ai.tracking.track_manager import TrackManager
 from ai.tracking.tracker import ObjectTracker
+from ai.ui.zone_editor import ZoneEditor
 from ai.video.capture import VideoCapture
 
+
+# ==========================================
+# Configuration
+# ==========================================
 
 CAMERA_ID = "camera_01"
 VIDEO_SOURCE = 0
@@ -18,26 +24,128 @@ VIDEO_SOURCE = 0
 MODEL_PATH = "ai/models/yolo11n.pt"
 CONFIDENCE = 0.40
 
+VEHICLE_CLASSES = {
+    "car",
+    "motorcycle",
+    "bus",
+    "truck",
+}
 
-def draw_scene(frame, scene, events):
+
+# ==========================================
+# Utility
+# ==========================================
+
+def crop_object(frame, bbox):
     """
-    Draw tracked objects and security events on the frame.
+    Safely crop an object from the current frame.
     """
 
-    # Draw tracked objects
+    if frame is None or bbox is None:
+        return None
+
+    height, width = frame.shape[:2]
+
+    x1, y1, x2, y2 = map(int, bbox)
+
+    x1 = max(0, min(x1, width - 1))
+    y1 = max(0, min(y1, height - 1))
+    x2 = max(0, min(x2, width))
+    y2 = max(0, min(y2, height))
+
+    if x2 <= x1 or y2 <= y1:
+        return None
+
+    return frame[y1:y2, x1:x2]
+
+
+# ==========================================
+# Visualization
+# ==========================================
+
+def draw_scene(
+    frame,
+    scene,
+    events,
+    active_intrusions,
+):
+    """
+    Draw the current IBVAP scene.
+
+    Includes:
+    - restricted zones
+    - tracked objects
+    - trajectories
+    - ANPR information
+    - persistent intrusion warnings
+    - current security events
+    """
+
+    # ======================================
+    # Restricted zones
+    # ======================================
+
+    for zone in getattr(scene, "zones", []):
+
+        points = [
+            tuple(map(int, point))
+            for point in zone.polygon
+        ]
+
+        if len(points) < 3:
+            continue
+
+        cv2.polylines(
+            frame,
+            [np.array(points, dtype=np.int32)],
+            True,
+            (0, 0, 255),
+            2,
+        )
+
+        cv2.putText(
+            frame,
+            zone.name,
+            points[0],
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, 0, 255),
+            2,
+        )
+
+    # ======================================
+    # Tracked objects
+    # ======================================
+
     for obj in scene.objects:
+
         x1, y1, x2, y2 = map(int, obj.bbox)
 
+        # ----------------------------------
+        # Bounding-box colour
+        # ----------------------------------
+
+        if obj.track_id in active_intrusions:
+            box_color = (0, 0, 255)
+        else:
+            box_color = (0, 255, 0)
+
+        # ----------------------------------
         # Bounding box
+        # ----------------------------------
+
         cv2.rectangle(
             frame,
             (x1, y1),
             (x2, y2),
-            (0, 255, 0),
+            box_color,
             2,
         )
 
+        # ----------------------------------
         # Object label
+        # ----------------------------------
+
         label = (
             f"ID:{obj.track_id} "
             f"{obj.object_type} "
@@ -50,16 +158,136 @@ def draw_scene(frame, scene, events):
             (x1, max(y1 - 10, 20)),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.55,
-            (0, 255, 0),
+            box_color,
             2,
         )
 
-        # Draw trajectory
+        # ==================================
+        # ANPR display
+        # ==================================
+
+        plate_y = min(
+            y2 + 20,
+            frame.shape[0] - 10,
+        )
+
+        if obj.object_type in VEHICLE_CLASSES:
+
+            if obj.plate_status == "recognized":
+
+                plate_text = (
+                    f"PLATE: {obj.plate_number}"
+                )
+
+                cv2.putText(
+                    frame,
+                    plate_text,
+                    (x1, plate_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.55,
+                    (255, 255, 255),
+                    2,
+                )
+
+            elif obj.plate_status == "processing":
+
+                cv2.putText(
+                    frame,
+                    "PLATE: processing...",
+                    (x1, plate_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.50,
+                    (255, 255, 255),
+                    2,
+                )
+
+            elif obj.plate_status == "plate_not_found":
+
+                cv2.putText(
+                    frame,
+                    "PLATE: not found",
+                    (x1, plate_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.50,
+                    (255, 255, 255),
+                    2,
+                )
+
+            elif obj.plate_status == "plate_low_confidence":
+
+                cv2.putText(
+                    frame,
+                    "PLATE: low confidence",
+                    (x1, plate_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.50,
+                    (255, 255, 255),
+                    2,
+                )
+
+            elif obj.plate_status == "ocr_failed":
+
+                cv2.putText(
+                    frame,
+                    "PLATE: OCR failed",
+                    (x1, plate_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.50,
+                    (255, 255, 255),
+                    2,
+                )
+
+            elif obj.plate_status == "ocr_low_confidence":
+
+                cv2.putText(
+                    frame,
+                    "PLATE: OCR low confidence",
+                    (x1, plate_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.50,
+                    (255, 255, 255),
+                    2,
+                )
+
+            elif obj.plate_status == "plate_crop_failed":
+
+                cv2.putText(
+                    frame,
+                    "PLATE: crop failed",
+                    (x1, plate_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.50,
+                    (255, 255, 255),
+                    2,
+                )
+
+            elif obj.plate_status == "vehicle_crop_failed":
+
+                cv2.putText(
+                    frame,
+                    "PLATE: vehicle crop failed",
+                    (x1, plate_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.50,
+                    (255, 255, 255),
+                    2,
+                )
+
+        # ==================================
+        # Trajectory
+        # ==================================
+
         trajectory = obj.trajectory
 
         for i in range(1, len(trajectory)):
-            p1 = tuple(map(int, trajectory[i - 1]))
-            p2 = tuple(map(int, trajectory[i]))
+
+            p1 = tuple(
+                map(int, trajectory[i - 1])
+            )
+
+            p2 = tuple(
+                map(int, trajectory[i])
+            )
 
             cv2.line(
                 frame,
@@ -69,10 +297,42 @@ def draw_scene(frame, scene, events):
                 2,
             )
 
-    # Display events
-    y = 30
+    # ======================================
+    # Persistent intrusion warnings
+    # ======================================
+
+    warning_y = 30
+
+    for track_id, message in active_intrusions.items():
+
+        text = (
+            f"INTRUSION: ID {track_id} - "
+            f"{message}"
+        )
+
+        cv2.putText(
+            frame,
+            text,
+            (10, warning_y),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            (0, 0, 255),
+            2,
+        )
+
+        warning_y += 30
+
+    # ======================================
+    # Current non-intrusion events
+    # ======================================
+
+    event_y = warning_y + 10
 
     for event in events:
+
+        if event.event_type == "INTRUSION":
+            continue
+
         text = (
             f"{event.event_type}: "
             f"ID {event.track_id}"
@@ -81,24 +341,32 @@ def draw_scene(frame, scene, events):
         cv2.putText(
             frame,
             text,
-            (10, y),
+            (10, event_y),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.7,
+            0.65,
             (0, 0, 255),
             2,
         )
 
-        y += 30
+        event_y += 30
 
+
+# ==========================================
+# Main
+# ==========================================
 
 def main():
-    print("Starting IBVAP real-time pipeline...")
+
+    print(
+        "Starting IBVAP real-time pipeline..."
+    )
+
     print(f"Camera: {CAMERA_ID}")
     print(f"Video source: {VIDEO_SOURCE}")
 
-    # ---------------------------------------
-    # Initialize components
-    # ---------------------------------------
+    # ======================================
+    # Initialize tracker
+    # ======================================
 
     tracker = ObjectTracker(
         model_path=MODEL_PATH,
@@ -107,12 +375,17 @@ def main():
 
     track_manager = TrackManager()
 
+    # ======================================
+    # Scene builder
+    # ======================================
+
     scene_builder = SceneStateBuilder(
         camera_id=CAMERA_ID,
     )
 
-    # No restricted zones yet.
-    zones = []
+    # ======================================
+    # Loitering rule
+    # ======================================
 
     loitering_rule = LoiteringRule(
         enabled=True,
@@ -121,88 +394,349 @@ def main():
         target_classes=("person",),
     )
 
-    event_engine = EventEngine(
-        zones=zones,
-        loitering_rule=loitering_rule,
-    )
-    # ---------------------------------------
+    # ======================================
     # Open camera
-    # ---------------------------------------
+    # ======================================
+
     with VideoCapture(VIDEO_SOURCE) as capture:
+
+        first_frame = capture.read()
+
+        if first_frame is None:
+
+            print(
+                "Could not read initial "
+                "camera frame."
+            )
+
+            return
+
+        # ==================================
+        # Zone configuration
+        # ==================================
+
+        zone_editor = ZoneEditor(
+            zone_id="zone_01",
+            zone_name="Restricted Zone",
+        )
+
+        restricted_zone = zone_editor.edit(
+            first_frame
+        )
+
+        if restricted_zone is None:
+
+            print(
+                "No restricted zone configured."
+            )
+
+            zones = []
+
+        else:
+
+            zones = [restricted_zone]
+
+            print(
+                f"Configured zone: "
+                f"{restricted_zone.name}"
+            )
+
+        # ==================================
+        # Event engine
+        # ==================================
+
+        event_engine = EventEngine(
+            zones=zones,
+            loitering_rule=loitering_rule,
+        )
+
+        # ==================================
+        # ANPR manager
+        # ==================================
+
+        anpr_manager = ANPRManager()
+
+        # ==================================
+        # Persistent intrusion state
+        # ==================================
+
+        active_intrusions = {}
+
+        # ==================================
+        # FPS state
+        # ==================================
+
         previous_time = time.time()
+
+        # ==================================
+        # Main loop
+        # ==================================
+
         while True:
+
             frame = capture.read()
+
             if frame is None:
-                print("Video stream ended.")
+
+                print(
+                    "Video stream ended."
+                )
+
                 break
-            # --------------------------------
+
+            # ==================================
             # Detection + tracking
-            # --------------------------------
-            tracked_objects = tracker.update(frame)
-            # --------------------------------
+            # ==================================
+
+            tracked_objects = tracker.update(
+                frame
+            )
+
+            # ==================================
             # Track state management
-            # --------------------------------
+            # ==================================
+
             tracks = track_manager.update(
                 tracked_objects
             )
-            # --------------------------------
+
+            # ==================================
+            # ANPR
+            # ==================================
+
+            for track in tracks.values():
+
+                if (
+                    track.class_name
+                    not in VEHICLE_CLASSES
+                ):
+                    continue
+
+                vehicle_crop = crop_object(
+                    frame,
+                    track.bbox,
+                )
+
+                if vehicle_crop is None:
+                    track.plate_status = (
+                        "vehicle_crop_failed"
+                    )
+                    continue
+
+                # ----------------------------------
+                # IMPORTANT:
+                #
+                # ANPR failure must NEVER terminate
+                # the surveillance pipeline.
+                # ----------------------------------
+
+                try:
+
+                    anpr_manager.update(
+                        [track],
+                        vehicle_crop,
+                    )
+
+                except Exception as exc:
+
+                    track.plate_status = (
+                        "anpr_error"
+                    )
+
+                    print(
+                        f"[ANPR] Track "
+                        f"{track.track_id} error: "
+                        f"{type(exc).__name__}: "
+                        f"{exc}"
+                    )
+
+            # ==================================
             # Build scene
-            # --------------------------------
+            # ==================================
+
             timestamp = time.time()
+
             scene = scene_builder.build(
                 tracks=tracks,
                 timestamp=timestamp,
             )
-            # --------------------------------
-            # Evaluate security events
-            # --------------------------------
+
+            # Attach zones for visualization.
+            scene.zones = zones
+
+            # ==================================
+            # Evaluate events
+            # ==================================
+
             events = event_engine.evaluate(
                 scene
             )
-            # --------------------------------
-            # Calculate FPS
-            # --------------------------------
+
+            # ==================================
+            # Update intrusion state
+            # ==================================
+
+            for event in events:
+
+                if event.event_type != "INTRUSION":
+                    continue
+
+                if event.track_id is None:
+                    continue
+
+                active_intrusions[
+                    event.track_id
+                ] = event.message
+
+            # ==================================
+            # Maintain active intrusions
+            # ==================================
+
+            for track_id in list(
+                active_intrusions.keys()
+            ):
+
+                track = tracks.get(track_id)
+
+                # --------------------------------
+                # Track completely expired.
+                #
+                # TrackManager handles the
+                # disappearance grace period.
+                # --------------------------------
+
+                if track is None:
+
+                    del active_intrusions[
+                        track_id
+                    ]
+
+                    continue
+
+                # --------------------------------
+                # Check whether the object is
+                # currently inside a restricted
+                # zone.
+                # --------------------------------
+
+                still_inside = False
+
+                for zone in zones:
+
+                    if point_in_polygon(
+                        track.center,
+                        zone.polygon,
+                    ):
+
+                        still_inside = True
+
+                        break
+
+                # --------------------------------
+                # Remove intrusion only after
+                # the tracked object has actually
+                # left the zone.
+                # --------------------------------
+
+                if not still_inside:
+
+                    del active_intrusions[
+                        track_id
+                    ]
+
+            # ==================================
+            # FPS
+            # ==================================
+
             current_time = time.time()
-            elapsed = current_time - previous_time
-            fps = 1.0 / elapsed if elapsed > 0 else 0.0
+
+            elapsed = (
+                current_time - previous_time
+            )
+
+            fps = (
+                1.0 / elapsed
+                if elapsed > 0
+                else 0.0
+            )
+
             previous_time = current_time
-            # --------------------------------
-            # Draw visualization
-            # --------------------------------
+
+            # ==================================
+            # Draw scene
+            # ==================================
+
             draw_scene(
                 frame,
                 scene,
                 events,
+                active_intrusions,
             )
+
+            # ==================================
             # Statistics
+            # ==================================
+
+            object_count = len(
+                scene.objects
+            )
+
+            vehicle_count = sum(
+                1
+                for obj in scene.objects
+                if obj.object_type
+                in VEHICLE_CLASSES
+            )
+
+            intrusion_count = len(
+                active_intrusions
+            )
+
             stats = (
                 f"FPS: {fps:.1f} | "
-                f"Objects: {len(scene.objects)}"
+                f"Objects: {object_count} | "
+                f"Vehicles: {vehicle_count} | "
+                f"Intrusions: {intrusion_count}"
             )
+
             cv2.putText(
                 frame,
                 stats,
-                (10, frame.shape[0] - 20),
+                (
+                    10,
+                    frame.shape[0] - 20,
+                ),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.65,
                 (255, 255, 255),
                 2,
             )
-            # --------------------------------
+
+            # ==================================
             # Display
-            # --------------------------------
+            # ==================================
 
             cv2.imshow(
                 "IBVAP - Real-Time AI",
                 frame,
             )
-            # Press Q to exit
-            if cv2.waitKey(1) & 0xFF == ord("q"):
+
+            # ==================================
+            # Exit
+            # ==================================
+
+            if (
+                cv2.waitKey(1) & 0xFF
+                == ord("q")
+            ):
+
                 break
 
     cv2.destroyAllWindows()
 
-    print("IBVAP pipeline stopped.")
+    print(
+        "IBVAP pipeline stopped."
+    )
 
 
 if __name__ == "__main__":

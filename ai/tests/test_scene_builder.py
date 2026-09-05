@@ -48,7 +48,7 @@ def main():
 
     assert first_scene_object.zone == "restricted_area"
     assert first_scene_object.identity == "test_person"
-    assert first_scene_object.plate == "TEST123"
+    assert first_scene_object.plate_number == "TEST123"
 
     print("\nState propagation test: PASSED")
 

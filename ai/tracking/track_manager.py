@@ -6,7 +6,17 @@ from ai.tracking.tracker import TrackedObject
 
 
 class TrackManager:
-    MAX_MISSED_FRAMES = 15
+    """
+    Maintains persistent state for tracked objects.
+
+    A track is kept temporarily when the detector/tracker misses
+    the object. This prevents bounding boxes, trajectories and
+    associated state from disappearing immediately.
+    """
+
+    # Number of consecutive frames an object may be missing
+    # before its track is permanently removed.
+    MAX_MISSED_FRAMES = 45
 
     def __init__(self):
         self.tracks: Dict[int, TrackState] = {}
@@ -17,6 +27,8 @@ class TrackManager:
     ) -> Dict[int, TrackState]:
 
         current_ids = set()
+
+        current_time = time.time()
 
         # ---------------------------------------
         # Update detected objects
@@ -31,7 +43,10 @@ class TrackManager:
                 (obj.bbox[1] + obj.bbox[3]) / 2,
             )
 
+            # -----------------------------------
             # New track
+            # -----------------------------------
+
             if obj.track_id not in self.tracks:
 
                 self.tracks[obj.track_id] = TrackState(
@@ -40,24 +55,27 @@ class TrackManager:
                     class_name=obj.class_name,
                     bbox=obj.bbox,
                     confidence=obj.confidence,
-                    first_seen=time.time(),
-                    last_seen=time.time(),
+                    first_seen=current_time,
+                    last_seen=current_time,
                     trajectory=[center],
                     missed_frames=0,
                 )
 
+            # -----------------------------------
             # Existing track
+            # -----------------------------------
+
             else:
 
                 track = self.tracks[obj.track_id]
 
                 track.bbox = obj.bbox
                 track.confidence = obj.confidence
-                track.last_seen = time.time()
+                track.last_seen = current_time
 
                 track.trajectory.append(center)
 
-                # Object has been seen again
+                # Object has appeared again.
                 track.missed_frames = 0
 
         # ---------------------------------------
@@ -72,7 +90,10 @@ class TrackManager:
 
                 track.missed_frames += 1
 
-                if track.missed_frames > self.MAX_MISSED_FRAMES:
+                if (
+                    track.missed_frames
+                    > self.MAX_MISSED_FRAMES
+                ):
                     tracks_to_remove.append(track_id)
 
         # ---------------------------------------
@@ -81,4 +102,5 @@ class TrackManager:
 
         for track_id in tracks_to_remove:
             del self.tracks[track_id]
+
         return self.tracks

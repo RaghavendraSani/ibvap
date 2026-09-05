@@ -26,7 +26,13 @@ class TrackState:
 
     plate_status: str = "not_processed"
     plate_number: Optional[str] = None
+    plate_confidence: Optional[float] = None
+    plate_detection_confidence: Optional[float] = None
+    plate_bbox: Optional[
+        Tuple[float, float, float, float]
+    ] = None
     watchlist_status: Optional[str] = None
+
     missed_frames: int = 0
 
     @property
