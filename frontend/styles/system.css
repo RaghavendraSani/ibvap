@@ -1,0 +1,989 @@
+/* ==========================================================================
+   IBVAP SYSTEM SETTINGS STYLESHEET
+   Clean, high-density military administration layout adhering to reference UI:
+   - 5-Pill Subtabs Navigation
+   - 3-Column × 2-Row Uniform Cards Grid
+   - Real-Time Sliders, Toggle Switches, Progress Indicators, Form Controls
+   - AI Model Inspector Modal & Toast Feedback
+   ========================================================================== */
+
+.system-view-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding-bottom: 24px;
+}
+
+/* ==========================================================================
+   1. PAGE HEADER
+   ========================================================================== */
+.system-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.system-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.015em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.system-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 400;
+  color: #6B7280;
+  margin: 0;
+}
+
+/* ==========================================================================
+   2. SUB-TABS PILL ROW
+   ========================================================================== */
+.system-subtabs-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  color: #374151;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.subtab-btn:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #111827;
+}
+
+.subtab-btn.active {
+  background: #1B382B;
+  border-color: #1B382B;
+  color: #FFFFFF;
+  box-shadow: 0 2px 4px rgba(27, 56, 43, 0.18);
+}
+
+.subtab-btn.active svg {
+  stroke: #FFFFFF;
+}
+
+/* ==========================================================================
+   3. 6-CARD GRID SYSTEM
+   ========================================================================== */
+.system-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.sys-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+
+.sys-card.card-span-2 {
+  grid-column: span 2;
+}
+
+.sys-card.card-dimmed {
+  opacity: 0.38;
+}
+
+.sys-card.card-highlight {
+  border-color: #1B382B;
+  box-shadow: 0 0 0 2px rgba(27, 56, 43, 0.15);
+}
+
+.sys-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.card-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-icon-wrap {
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sys-card-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.sys-card-body {
+  padding: 16px 18px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  flex: 1;
+}
+
+/* Common Info Row */
+.sys-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+}
+
+.info-label {
+  font-size: 0.79rem;
+  font-weight: 500;
+  color: #4B5563;
+}
+
+.info-val {
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.font-mono {
+  font-family: 'Inter', monospace;
+}
+
+/* Green Status Indicator */
+.status-indicator-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-dot-green {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #16A34A;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+}
+
+.status-text-green {
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: #16A34A;
+}
+
+/* Stacked Progress Bar Row */
+.sys-info-row-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stacked-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sys-progress-track {
+  width: 100%;
+  height: 7px;
+  background-color: #E5E7EB;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.sys-progress-fill {
+  height: 100%;
+  background-color: #1B382B;
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+/* ==========================================================================
+   CARD 2: AI CONFIGURATION CONTROLS
+   ========================================================================== */
+.sys-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+}
+
+.control-label {
+  font-size: 0.79rem;
+  font-weight: 500;
+  color: #4B5563;
+}
+
+.control-action-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle-status-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #16A34A;
+  min-width: 54px;
+  text-align: right;
+  transition: color 0.2s ease;
+}
+
+.toggle-status-text.text-muted {
+  color: #9CA3AF;
+}
+
+/* Pill Toggle Switch */
+.switch-pill {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.switch-pill input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider-round {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #D1D5DB;
+  transition: 0.22s ease;
+  border-radius: 20px;
+}
+
+.slider-round::before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #FFFFFF;
+  transition: 0.22s ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.switch-pill input:checked + .slider-round {
+  background-color: #1B382B;
+}
+
+.switch-pill input:checked + .slider-round::before {
+  transform: translateX(16px);
+}
+
+/* Custom Select Dropdowns */
+.custom-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 130px;
+}
+
+.sys-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 6px 26px 6px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sys-select:focus {
+  border-color: #1B382B;
+  box-shadow: 0 0 0 2px rgba(27, 56, 43, 0.12);
+}
+
+.select-chevron {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: #6B7280;
+}
+
+/* ==========================================================================
+   CARD 3: SYSTEM HEALTH BARS
+   ========================================================================== */
+.health-metric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 24px;
+}
+
+.health-label {
+  font-size: 0.79rem;
+  font-weight: 500;
+  color: #4B5563;
+  min-width: 95px;
+}
+
+.health-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.health-bar-track {
+  width: 130px;
+  height: 9px;
+  background-color: #E5E7EB;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.health-bar-fill {
+  height: 100%;
+  background-color: #1B382B;
+  border-radius: 2px;
+  transition: width 0.35s ease;
+}
+
+.health-value {
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: #111827;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ==========================================================================
+   CARD 4: AI MODELS PIPELINE
+   ========================================================================== */
+.model-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-model-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.ai-model-row:last-child {
+  border-bottom: none;
+}
+
+.model-lead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.model-badge-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: #F0FDF4;
+  color: #16A34A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.anpr-badge-pill {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #16A34A;
+}
+
+.model-name {
+  font-size: 0.79rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.model-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 8px;
+}
+
+.btn-model-settings {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  padding: 4px 9px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-model-settings:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #111827;
+}
+
+.btn-model-settings .arrow-right {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   CARD 5: ALERT CONFIGURATION SLIDERS
+   ========================================================================== */
+.alert-sliders-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.slider-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.slider-label {
+  font-size: 0.79rem;
+  font-weight: 500;
+  color: #4B5563;
+  flex: 1;
+}
+
+.slider-interactive-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 140px;
+  justify-content: flex-end;
+}
+
+.sys-range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100px;
+  height: 4px;
+  background: #1B382B;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+}
+
+.sys-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 2px solid #1B382B;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.sys-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.slider-val {
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: #111827;
+  min-width: 34px;
+  text-align: right;
+}
+
+.reset-action-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.btn-reset-default {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.btn-reset-default:hover {
+  background: #F3F4F6;
+  border-color: #9CA3AF;
+  color: #111827;
+}
+
+/* ==========================================================================
+   CARD 5: USER SETTINGS FORM (SPAN 2 COLUMNS)
+   ========================================================================== */
+.user-settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-settings-columns-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.user-settings-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F0FDF4;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #DCFCE7;
+}
+
+.duty-badge-text {
+  font-size: 0.64rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  color: #166534;
+}
+
+.custom-select-wrap.select-full {
+  width: 100%;
+}
+
+.user-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-field-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #4B5563;
+}
+
+.sys-text-input {
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sys-text-input:focus {
+  border-color: #1B382B;
+  box-shadow: 0 0 0 2px rgba(27, 56, 43, 0.12);
+}
+
+.user-field-group .custom-select-wrap {
+  width: 100%;
+}
+
+.checkbox-options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.sys-checkbox-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sys-checkbox-wrap input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.custom-checkbox-box {
+  width: 16px;
+  height: 16px;
+  background: #FFFFFF;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.sys-checkbox-wrap input:checked ~ .custom-checkbox-box {
+  background: #1B382B;
+  border-color: #1B382B;
+}
+
+.sys-checkbox-wrap input:checked ~ .custom-checkbox-box::after {
+  content: "";
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+.chk-label-text {
+  font-size: 0.77rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.user-logout-wrap {
+  margin-top: 4px;
+}
+
+.btn-sys-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #FFFFFF;
+  border: 1.5px solid #EF4444;
+  color: #EF4444;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-sys-logout:hover {
+  background: #FEF2F2;
+  border-color: #DC2626;
+  color: #DC2626;
+}
+
+/* ==========================================================================
+   4. MODAL: AI MODEL INSPECTION DIALOG
+   ========================================================================== */
+.sys-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.sys-modal-backdrop.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.sys-modal-card {
+  width: min(92vw, 480px);
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalPop 0.22s ease-out;
+}
+
+@keyframes modalPop {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.sys-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #F3F4F6;
+  background: #FAFAFA;
+}
+
+.modal-header-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modal-badge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #1B382B;
+}
+
+.modal-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.btn-modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #6B7280;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.btn-modal-close:hover {
+  background: #E5E7EB;
+  color: #111827;
+}
+
+.sys-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.modal-spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: #F9FAFB;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+}
+
+.spec-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+}
+
+.spec-val {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.spec-val.text-green {
+  color: #16A34A;
+}
+
+.modal-config-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-field-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #4B5563;
+}
+
+.modal-config-block .sys-select {
+  width: 100%;
+}
+
+.sys-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #F3F4F6;
+  background: #FAFAFA;
+}
+
+.btn-modal-secondary {
+  padding: 7px 14px;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-modal-secondary:hover {
+  background: #F3F4F6;
+}
+
+.btn-modal-primary {
+  padding: 7px 16px;
+  background: #1B382B;
+  border: 1px solid #1B382B;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-modal-primary:hover {
+  background: #152D22;
+}
+
+/* ==========================================================================
+   5. TOAST FEEDBACK
+   ========================================================================== */
+.sys-toast-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1B382B;
+  color: #FFFFFF;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1200;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.sys-toast-notification.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sys-toast-notification.hidden {
+  display: none;
+}
+
+/* ==========================================================================
+   RESPONSIVE LAYOUT
+   ========================================================================== */
+@media (max-width: 1280px) {
+  .system-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .sys-card.card-span-2 {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 900px) {
+  .user-settings-columns-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .system-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .sys-card.card-span-2 {
+    grid-column: span 1;
+  }
+}

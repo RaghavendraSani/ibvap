@@ -9,15 +9,26 @@
 
 import { AnalyticsView } from './analyticsView.js';
 import { IncidentCenter } from './incidentCenter.js';
+import { SystemView } from './systemView.js';
+import { LiveFeedView } from './liveFeedView.js';
 
 export class Dashboard {
   constructor(options = {}) {
     this.container = options.container || document.getElementById('dashboard-root');
     this.onLockTerminal = options.onLockTerminal || null;
     this.onReplayIntro = options.onReplayIntro || null;
-    this.currentView = window.location.hash === '#analytics' ? 'analytics' : (window.location.hash === '#incidents' ? 'incidents' : 'command');
+    const initialHash = window.location.hash.replace('#', '');
+    this.currentView = ['analytics', 'incidents', 'system', 'live-feed'].includes(initialHash) ? initialHash : 'command';
     this.analyticsView = new AnalyticsView();
     this.incidentCenter = null;
+    this.systemView = new SystemView({
+      onLogout: () => {
+        if (typeof this.onLockTerminal === 'function') {
+          this.onLockTerminal();
+        }
+      }
+    });
+    this.liveFeedView = new LiveFeedView();
 
     // Default placeholder data matching reference screenshot
     this.analytics = {
@@ -160,7 +171,7 @@ export class Dashboard {
               <span>Command</span>
             </a>
 
-            <a href="#live-feed" class="nav-item" data-view="live-feed">
+            <a href="#live-feed" class="nav-item ${this.currentView === 'live-feed' ? 'active' : ''}" data-view="live-feed">
               <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="23 7 16 12 23 17 23 7"></polygon>
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
@@ -177,22 +188,22 @@ export class Dashboard {
               <span>Analytics & Reports</span>
             </a>
 
-            <a href="#incidents" class="nav-item" data-view="incidents">
+            <a href="#incidents" class="nav-item ${this.currentView === 'incidents' ? 'active' : ''}" data-view="incidents">
               <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                 <line x1="12" y1="9" x2="12" y2="13"></line>
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
               <span>Incidents</span>
-              <span class="nav-badge">7</span>
+              <span id="sidebar-incidents-badge" class="nav-badge">7</span>
             </a>
 
-            <a href="#system" class="nav-item" data-view="system">
+            <a href="#system" class="nav-item ${this.currentView === 'system' ? 'active' : ''}" data-view="system">
               <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
               </svg>
-              <span>System</span>
+              <span>System Settings</span>
             </a>
           </nav>
 
@@ -542,6 +553,20 @@ export class Dashboard {
              VIEW 3: INCIDENT / ALERT CENTER VIEW CONTAINER
              ================================================================= -->
         <div id="view-incidents-container" class="dashboard-view-content dash-view-panel ${this.currentView === 'incidents' ? 'active' : ''}"></div>
+
+        <!-- =================================================================
+             VIEW 4: SYSTEM SETTINGS VIEW PANEL
+             ================================================================= -->
+        <div id="view-system" class="dash-view-panel ${this.currentView === 'system' ? 'active' : ''}">
+          ${this.systemView.render()}
+        </div>
+
+        <!-- =================================================================
+             VIEW 5: LIVE FEED VIEW PANEL
+             ================================================================= -->
+        <div id="view-live-feed" class="dash-view-panel ${this.currentView === 'live-feed' ? 'active' : ''}">
+          ${this.liveFeedView.render()}
+        </div>
       </div>
     </div>
   `;
@@ -569,6 +594,18 @@ export class Dashboard {
     const analyticsContainer = this.container.querySelector('#view-analytics-container');
     if (analyticsContainer && this.analyticsView) {
       this.analyticsView.bindEvents(analyticsContainer);
+    }
+
+    // 0b. Bind System Settings interactions
+    const systemContainer = this.container.querySelector('#view-system');
+    if (systemContainer && this.systemView) {
+      this.systemView.bindEvents(systemContainer);
+    }
+
+    // 0c. Bind Live Feed interactions
+    const liveFeedContainer = this.container.querySelector('#view-live-feed');
+    if (liveFeedContainer && this.liveFeedView) {
+      this.liveFeedView.bindEvents(liveFeedContainer);
     }
 
     // 1. Profile Dropdown toggle
@@ -652,16 +689,14 @@ export class Dashboard {
       });
     }
 
-    // 6. Navigation tabs active state and view switching
+    // 6. Navigation tabs view switching (Command vs Live Feed vs Analytics & Reports vs Incidents vs System Settings)
     const navItems = this.container.querySelectorAll('.nav-item');
     navItems.forEach(item => {
       item.addEventListener('click', (e) => {
         e.preventDefault();
         const view = item.getAttribute('data-view') || item.dataset.view;
-        if (view === 'analytics' || view === 'command' || view === 'incidents') {
+        if (['analytics', 'command', 'incidents', 'system', 'live-feed'].includes(view)) {
           this.switchView(view);
-        } else if (view === 'live-feed') {
-          this.switchView('command');
         } else {
           navItems.forEach(n => n.classList.remove('active'));
           item.classList.add('active');
@@ -672,12 +707,20 @@ export class Dashboard {
     // Hash navigation listener
     window.addEventListener('hashchange', () => {
       const hash = window.location.hash.replace('#', '');
-      if (hash === 'analytics' || hash === 'command' || hash === 'incidents') {
+      if (['analytics', 'command', 'incidents', 'system', 'live-feed'].includes(hash)) {
         if (this.currentView !== hash) {
           this.switchView(hash);
         }
       }
     });
+
+    // Top Header Settings Gear Button
+    const btnSettings = this.container.querySelector('.btn-settings');
+    if (btnSettings) {
+      btnSettings.addEventListener('click', () => {
+        this.switchView('system');
+      });
+    }
 
     // 7. Sidebar Three Lines Minimize / Maximize Toggle
     const btnToggle = this.container.querySelector('#btn-sidebar-toggle');
@@ -714,6 +757,9 @@ export class Dashboard {
     }
   }
 
+  /**
+   * Switch between Command, Live Feed, Analytics & Reports, Incidents, and System Settings views
+   */
   switchView(viewName) {
     this.currentView = viewName;
 
@@ -728,42 +774,26 @@ export class Dashboard {
       }
     });
 
-    const commandView = this.container.querySelector('#view-command-container');
-    const analyticsView = this.container.querySelector('#view-analytics-container');
-    const incidentsView = this.container.querySelector('#view-incidents-container');
+    const cmdPanel = this.container.querySelector('#view-command-container') || this.container.querySelector('#view-command');
+    const anPanel = this.container.querySelector('#view-analytics-container') || this.container.querySelector('#view-analytics');
+    const incidentsPanel = this.container.querySelector('#view-incidents-container');
+    const sysPanel = this.container.querySelector('#view-system');
+    const liveFeedPanel = this.container.querySelector('#view-live-feed');
 
-    if (viewName === 'analytics') {
-      if (commandView) commandView.classList.remove('active');
-      if (incidentsView) incidentsView.classList.remove('active');
-      if (analyticsView) {
-        analyticsView.classList.add('active');
+    if (cmdPanel) cmdPanel.classList.toggle('active', viewName === 'command');
+    if (anPanel) anPanel.classList.toggle('active', viewName === 'analytics');
+    if (incidentsPanel) {
+      incidentsPanel.classList.toggle('active', viewName === 'incidents');
+      if (viewName === 'incidents' && this.incidentCenter) {
+        this.incidentCenter.setCurrentFeed(this.analytics.sectorName, this.analytics.cameraId);
+        this.incidentCenter.render();
       }
-      if (window.location.hash !== '#analytics') {
-        history.pushState(null, '', '#analytics');
-      }
-    } else if (viewName === 'incidents') {
-      if (commandView) commandView.classList.remove('active');
-      if (analyticsView) analyticsView.classList.remove('active');
-      if (incidentsView) {
-        incidentsView.classList.add('active');
-        if (this.incidentCenter) {
-          this.incidentCenter.setCurrentFeed(this.analytics.sectorName, this.analytics.cameraId);
-          this.incidentCenter.render();
-        }
-      }
-      if (window.location.hash !== '#incidents') {
-        history.pushState(null, '', '#incidents');
-      }
-    } else {
-      // Default: 'command'
-      if (analyticsView) analyticsView.classList.remove('active');
-      if (incidentsView) incidentsView.classList.remove('active');
-      if (commandView) {
-        commandView.classList.add('active');
-      }
-      if (window.location.hash !== '#command') {
-        history.pushState(null, '', '#command');
-      }
+    }
+    if (sysPanel) sysPanel.classList.toggle('active', viewName === 'system');
+    if (liveFeedPanel) liveFeedPanel.classList.toggle('active', viewName === 'live-feed');
+
+    if (window.location.hash !== `#${viewName}`) {
+      history.pushState(null, '', `#${viewName}`);
     }
   }
 

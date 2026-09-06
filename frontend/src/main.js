@@ -18,10 +18,14 @@ window.addEventListener('DOMContentLoaded', () => {
   const dashboard = new Dashboard({
     container: dashboardRoot,
     onLockTerminal: () => {
-      console.log('[IBVAP] Officer locked terminal.');
+      console.log('[IBVAP] Officer logged out / locked terminal.');
+      sessionStorage.removeItem('ibvap-authenticated');
+      if (window.location.hash) {
+        history.pushState(null, '', window.location.pathname);
+      }
       dashboard.hide();
       loginScreen.show();
-      loginScreen.showStatus('Terminal locked', 'info');
+      loginScreen.showStatus('Terminal logged out successfully', 'info');
     },
     onReplayIntro: () => {
       LoadingScreen.replay();
@@ -47,23 +51,22 @@ window.addEventListener('DOMContentLoaded', () => {
       console.log(`[IBVAP] Officer ${serviceNo} authenticated at ${post}`);
       sessionStorage.setItem('ibvap-authenticated', 'true');
       dashboard.setDutyOfficer(serviceNo, post);
+      loginScreen.hide();
       dashboard.show();
     }
   });
 
   // Auto-restore authenticated session if previously logged in or hash is set
-  if (location.hash === '#incidents') {
-    loginRoot.style.display = 'none';
+  const validHashes = ['#command', '#analytics', '#incidents', '#system', '#live-feed'];
+  if (sessionStorage.getItem('ibvap-authenticated') === 'true' || validHashes.includes(location.hash)) {
+    loginScreen.hide();
     dashboard.show();
-    dashboard.switchView('incidents');
-  } else if (location.hash === '#analytics') {
-    loginRoot.style.display = 'none';
-    dashboard.show();
-    dashboard.switchView('analytics');
-  } else if (sessionStorage.getItem('ibvap-authenticated') === 'true' || location.hash === '#command') {
-    loginRoot.style.display = 'none';
-    dashboard.show();
-    dashboard.switchView('command');
+    if (location.hash) {
+      const targetView = location.hash.replace('#', '');
+      if (['command', 'analytics', 'incidents', 'system', 'live-feed'].includes(targetView)) {
+        dashboard.switchView(targetView);
+      }
+    }
   }
 
   // 3. Initialize & Mount Full-Screen Loading Screen Overlay
