@@ -1,0 +1,1536 @@
+/* ==========================================================================
+   IBVAP ANALYTICS & REPORTS INTERFACE
+   Pixel-faithful military intelligence styling matching tactical design.
+   ========================================================================== */
+
+.analytics-view-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   1. PAGE HEADER ROW (TITLE + ACTIONS)
+   ========================================================================== */
+.analytics-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 2px 4px 2px;
+}
+
+.analytics-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.analytics-title {
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #142217;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.analytics-subtitle {
+  font-size: 0.94rem;
+  font-weight: 500;
+  color: #5B6B5D;
+  margin-top: 2px;
+}
+
+.analytics-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Date Range Dropdown Trigger & Wrapper */
+.custom-dropdown-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid #D7DFD5;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #213023;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  user-select: none;
+}
+
+.dropdown-trigger-btn:hover {
+  border-color: var(--army-green);
+  background: #FAFCFA;
+}
+
+.dropdown-trigger-btn .icon-calendar {
+  color: #4C5C4E;
+}
+
+.dropdown-trigger-btn .dropdown-chevron {
+  color: #6B7C6D;
+  transition: transform 0.2s ease;
+}
+
+.custom-dropdown-wrap.open .dropdown-chevron {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu Popover */
+.dropdown-menu-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: #FFFFFF;
+  border: 1px solid #D2DDD0;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 4px 0;
+  min-width: 155px;
+  z-index: 100;
+  display: none;
+  animation: dropdownPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-dropdown-wrap.open .dropdown-menu-list {
+  display: block;
+}
+
+@keyframes dropdownPop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 14px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 0.77rem;
+  font-weight: 500;
+  color: #263528;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.dropdown-menu-item:hover {
+  background: #F1F6F1;
+  color: var(--army-green);
+}
+
+.dropdown-menu-item.selected {
+  background: #E8F3EA;
+  color: var(--army-green);
+  font-weight: 700;
+}
+
+/* Export Button */
+.btn-analytics-export {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid #D7DFD5;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #213023;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.btn-analytics-export:hover {
+  border-color: var(--army-green);
+  color: var(--army-green);
+  background: #FAFCFA;
+}
+
+/* ==========================================================================
+   2. TOP KPI CARDS ROW (6 CARDS)
+   ========================================================================== */
+.analytics-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.analytics-kpi-card {
+  background: #FFFFFF;
+  border: 1px solid #E1E6DE;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.analytics-kpi-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+}
+
+.analytics-kpi-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #E8F3EA;
+  color: #1E4324;
+}
+
+.analytics-kpi-icon.icon-alert-red {
+  background: #FDECEC;
+  color: #E53935;
+}
+
+.analytics-kpi-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.analytics-kpi-label {
+  font-size: 0.69rem;
+  font-weight: 500;
+  color: #6C7C6F;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.analytics-kpi-num-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.analytics-kpi-val {
+  font-size: 1.32rem;
+  font-weight: 800;
+  color: #17261A;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.analytics-kpi-trend {
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.analytics-kpi-trend.trend-up-green {
+  color: #2E7D32;
+}
+
+.analytics-kpi-trend.trend-up-red {
+  color: #E53935;
+}
+
+/* ==========================================================================
+   3. MIDDLE ROW: DETECTION TRENDS (65%) + THREAT DISTRIBUTION (35%)
+   ========================================================================== */
+.analytics-row-mid {
+  display: grid;
+  grid-template-columns: 1.88fr 1fr;
+  gap: 12px;
+}
+
+.analytics-card {
+  background: #FFFFFF;
+  border: 1px solid #E1E6DE;
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.analytics-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.card-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.analytics-card-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #18271B;
+  text-transform: uppercase;
+}
+
+.info-circle-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #8D9C8F;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+
+.info-circle-btn:hover {
+  color: var(--army-green);
+}
+
+/* Detection Trends Filter Tabs */
+.trend-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #F3F6F2;
+  padding: 2.5px;
+  border-radius: 6px;
+}
+
+.trend-filter-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #556658;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+}
+
+.trend-filter-btn:hover {
+  color: #162419;
+}
+
+.trend-filter-btn.active {
+  background: #1E4324;
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(30, 67, 36, 0.25);
+}
+
+/* Chart Canvas Container */
+.trend-chart-container {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  margin-top: 4px;
+}
+
+.trend-chart-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Chart Peak Floating Tooltip */
+.chart-tooltip-badge {
+  position: absolute;
+  top: 14px;
+  left: 48%;
+  transform: translateX(-50%);
+  background: #FFFFFF;
+  border: 1px solid #D5DDD3;
+  border-radius: 5px;
+  padding: 4px 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.09);
+  text-align: center;
+  pointer-events: none;
+  z-index: 5;
+  animation: fadeIn 0.25s ease;
+}
+
+.chart-tooltip-badge .tooltip-events {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #1A281D;
+  line-height: 1.15;
+}
+
+.chart-tooltip-badge .tooltip-hours {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #6C7D6F;
+}
+
+/* Threat Distribution Card Styling */
+.threat-dist-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+}
+
+.threat-stacked-bar {
+  display: flex;
+  width: 100%;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 12px 0 20px 0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.bar-seg {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.seg-critical {
+  background-color: #E53935;
+}
+
+.seg-high {
+  background-color: #F57C00;
+}
+
+.seg-medium {
+  background-color: #E5A118;
+}
+
+.seg-low {
+  background-color: #8C9990;
+}
+
+.threat-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.threat-stat-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.71rem;
+  font-weight: 600;
+  color: #556658;
+  margin-bottom: 2px;
+}
+
+.threat-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.threat-bullet.bullet-critical { background-color: #E53935; }
+.threat-bullet.bullet-high { background-color: #F57C00; }
+.threat-bullet.bullet-medium { background-color: #E5A118; }
+.threat-bullet.bullet-low { background-color: #8C9990; }
+
+.threat-stat-numbers {
+  display: flex;
+  flex-direction: column;
+}
+
+.threat-stat-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #162419;
+  line-height: 1.1;
+}
+
+.threat-stat-pct {
+  font-size: 0.7rem;
+  color: #708072;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   4. LOWER MIDDLE ROW: EVENTS BY SECTOR (45%) + CAMERA PERFORMANCE (55%)
+   ========================================================================== */
+.analytics-row-lower {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 12px;
+}
+
+/* Sector Horizontal Bars */
+.sector-bars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.sector-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sector-name {
+  width: 62px;
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: #263629;
+}
+
+.sector-bar-track {
+  flex: 1;
+  height: 13px;
+  background: #EBF1EA;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sector-bar-fill {
+  height: 100%;
+  background: #1E4324;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sector-count {
+  width: 38px;
+  text-align: right;
+  font-size: 0.8rem;
+  font-weight: 750;
+  color: #17271B;
+}
+
+/* Camera Performance Data Table */
+.card-header-link {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #1E4324;
+  text-decoration: none;
+  transition: color 0.16s ease;
+}
+
+.card-header-link:hover {
+  text-decoration: underline;
+}
+
+.camera-perf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+  margin-top: 2px;
+}
+
+.camera-perf-table th {
+  text-align: left;
+  font-size: 0.69rem;
+  font-weight: 600;
+  color: #6C7D6F;
+  padding: 6px 6px;
+  border-bottom: 1px solid #E6ECE4;
+}
+
+.camera-perf-table td {
+  padding: 7px 6px;
+  color: #213123;
+  font-weight: 500;
+  border-bottom: 1px solid #F1F5F0;
+}
+
+.camera-perf-table tbody tr:hover {
+  background-color: #F8FAF7;
+}
+
+.camera-perf-table .cell-camera {
+  font-weight: 600;
+  color: #162419;
+}
+
+.ai-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.ai-status-badge .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.ai-status-badge.status-online {
+  color: #2E7D32;
+}
+
+.ai-status-badge.status-online .status-dot {
+  background-color: #2E7D32;
+}
+
+.ai-status-badge.status-processing {
+  color: #E58A18;
+}
+
+.ai-status-badge.status-processing .status-dot {
+  background-color: #E58A18;
+}
+
+/* ==========================================================================
+   5. BOTTOM ROW: TOP ALERT LOCATIONS (38%) + GENERATE REPORT (62%)
+   ========================================================================== */
+.analytics-row-bottom {
+  display: grid;
+  grid-template-columns: 0.78fr 1.22fr;
+  gap: 12px;
+}
+
+/* Top Alert Locations */
+.top-locations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.top-loc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.loc-rank-badge {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 50%;
+  background: #E8F2EA;
+  color: #1E4324;
+  font-size: 0.72rem;
+  font-weight: 750;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loc-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1D2D20;
+  flex: 1;
+}
+
+.loc-events {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: #556658;
+}
+
+.loc-delta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #E53935;
+  width: 48px;
+  text-align: right;
+}
+
+/* Generate Report Card */
+.generate-report-card {
+  overflow: hidden;
+  position: relative;
+}
+
+.report-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.report-title-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.report-icon-box {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 7px;
+  background: #E8F3EA;
+  color: #1E4324;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-text-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.report-card-heading {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #18271B;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.report-card-sub {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: #6C7D6F;
+  margin: 0;
+}
+
+.report-actions-col {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 10;
+}
+
+/* Report Type Dropdown Trigger */
+.report-type-select-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 175px;
+  background: #FFFFFF;
+  border: 1px solid #D7DFD5;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #213023;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.report-type-select-btn:hover {
+  border-color: var(--army-green);
+  background: #FAFCFA;
+}
+
+/* Generate Report Action Button */
+.btn-submit-generate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1E4324;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 5px rgba(30, 67, 36, 0.2);
+  white-space: nowrap;
+}
+
+.btn-submit-generate:hover {
+  background: #27572E;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(30, 67, 36, 0.28);
+}
+
+.btn-submit-generate:active {
+  transform: translateY(0);
+}
+
+/* Report Notice Alert Callout */
+.report-notice-callout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #EDF6EE;
+  border: 1px solid #D5E8D8;
+  border-radius: 6px;
+  padding: 9px 14px;
+  margin-top: 14px;
+  position: relative;
+  z-index: 2;
+}
+
+.report-notice-icon {
+  color: #1E4324;
+  flex-shrink: 0;
+}
+
+.report-notice-text {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: #223D26;
+  line-height: 1.35;
+}
+
+/* Bottom Right Watermark (Mountains + Vigilance Intelligence Security Together) */
+.report-watermark-wrap {
+  position: absolute;
+  right: 14px;
+  bottom: 8px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+  opacity: 0.35;
+  user-select: none;
+}
+
+.report-watermark-svg {
+  width: 90px;
+  height: 42px;
+  color: #8C9F8F;
+}
+
+.report-motto-block {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #6C7D6F;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+/* Toast notification for actions */
+.analytics-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1E4324;
+  color: #FFFFFF;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+/* ==========================================================================
+   INTERACTIVE DRILL-DOWNS & CHART HOVER CROSSHAIR
+   ========================================================================== */
+.chart-crosshair-line {
+  stroke: #1E4324;
+  stroke-width: 1.4;
+  stroke-dasharray: 3, 3;
+  opacity: 0.85;
+  transition: x1 0.05s ease, x2 0.05s ease;
+  pointer-events: none;
+}
+
+.chart-hover-ring {
+  fill: #FFFFFF;
+  stroke: #1E4324;
+  stroke-width: 2.5;
+  pointer-events: none;
+  transition: cx 0.05s ease, cy 0.05s ease;
+}
+
+.trend-chart-container {
+  position: relative;
+  cursor: crosshair;
+}
+
+/* Sortable Table Headers */
+.camera-perf-table th.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  border-radius: 4px;
+}
+
+.camera-perf-table th.sortable-th:hover {
+  color: #1E4324;
+  background-color: #F1F6F1;
+}
+
+.th-sort-indicator {
+  display: inline-block;
+  font-size: 0.65rem;
+  margin-left: 3px;
+  opacity: 0.5;
+}
+
+.th-sort-indicator.active {
+  opacity: 1;
+  color: #1E4324;
+  font-weight: bold;
+}
+
+/* Interactive Sectors & Threat stats */
+.sector-bar-item {
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.sector-bar-item:hover,
+.sector-bar-item.selected-sector {
+  background-color: #EBF2EA;
+}
+
+.sector-bar-item.selected-sector .sector-bar-fill {
+  background-color: #0E6B24;
+  box-shadow: 0 0 6px rgba(14, 107, 36, 0.4);
+}
+
+.threat-stat-col {
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.threat-stat-col:hover {
+  background-color: #F0F5EF;
+}
+
+.top-loc-item {
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+
+.top-loc-item:hover {
+  background-color: #F2F7F1;
+  transform: translateX(2px);
+}
+
+.top-loc-item.highlighted-loc {
+  background-color: #E6F0E5;
+  border-left: 3px solid #1E4324;
+}
+
+/* ==========================================================================
+   ANALYTICS MODAL SYSTEM (EXPORT, VIEW ALL CAMERAS, REPORT PREVIEW)
+   ========================================================================== */
+.analytics-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 26, 17, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.18s ease-out;
+}
+
+.analytics-modal-card {
+  background: #FFFFFF;
+  border: 1px solid #D2DDD0;
+  border-radius: 8px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow: hidden;
+  position: relative;
+  animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.analytics-modal-card.modal-lg {
+  max-width: 860px;
+}
+
+.analytics-modal-card.modal-report {
+  max-width: 880px;
+  background: #FDFDFD;
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header-tactical {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #F7FAF6;
+  border-bottom: 1px solid #E1E9DF;
+  flex-shrink: 0;
+}
+
+.modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-header-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #E8F0E7;
+  color: #1E4324;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-header-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #142217;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.modal-header-subtitle {
+  font-size: 0.74rem;
+  color: #637566;
+  margin: 0;
+}
+
+.btn-modal-close {
+  background: none;
+  border: none;
+  color: #6A7B6D;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.btn-modal-close:hover {
+  background: #EBF1EA;
+  color: #17271B;
+}
+
+.modal-body-scrollable {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px;
+  background: #F7FAF6;
+  border-top: 1px solid #E1E9DF;
+  flex-shrink: 0;
+}
+
+/* Secondary & Primary modal buttons */
+.btn-modal-secondary {
+  background: #FFFFFF;
+  border: 1px solid #D2DDD0;
+  color: #2D3D30;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-modal-secondary:hover {
+  background: #F2F7F1;
+  border-color: #B5C4B3;
+}
+
+.btn-modal-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1E4324;
+  border: 1px solid #16361C;
+  color: #FFFFFF;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.15s ease;
+}
+
+.btn-modal-primary:hover {
+  background: #27572F;
+}
+
+/* ==========================================================================
+   VIEW ALL CAMERAS MODAL TABLE & FILTERS
+   ========================================================================== */
+.all-cam-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+.search-icon-svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7B8D7E;
+  pointer-events: none;
+}
+
+.modal-search-input {
+  width: 100%;
+  padding: 7px 12px 7px 32px;
+  font-size: 0.8rem;
+  border: 1px solid #D2DDD0;
+  border-radius: 5px;
+  background: #FFFFFF;
+  color: #1F2D21;
+  outline: none;
+}
+
+.modal-search-input:focus {
+  border-color: #1E4324;
+  box-shadow: 0 0 0 2px rgba(30, 67, 36, 0.12);
+}
+
+.filter-selects-row {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-select {
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  border: 1px solid #D2DDD0;
+  border-radius: 5px;
+  background: #FFFFFF;
+  color: #243527;
+  cursor: pointer;
+  outline: none;
+}
+
+.modal-table-wrap {
+  border: 1px solid #E0E7DE;
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.all-cam-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.77rem;
+}
+
+.all-cam-table th {
+  background: #F4F8F3;
+  color: #556658;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #DFE7DD;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.all-cam-table td {
+  padding: 8px 10px;
+  color: #213224;
+  border-bottom: 1px solid #EDF3EC;
+}
+
+.all-cam-table tbody tr:hover {
+  background-color: #F8FAF7;
+}
+
+.cam-name-cell {
+  font-weight: 700;
+  color: #132416;
+}
+
+.cam-loc-cell {
+  font-size: 0.73rem;
+  color: #607263;
+}
+
+/* ==========================================================================
+   EXPORT MODAL OPTIONS
+   ========================================================================== */
+.export-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.export-type-card {
+  border: 2px solid #E2EAE0;
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  background: #FFFFFF;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.export-type-card:hover {
+  border-color: #A3BCA5;
+  background: #FBFDFB;
+}
+
+.export-type-card.selected {
+  border-color: #1E4324;
+  background: #F2F8F2;
+}
+
+.export-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: #E8F2E8;
+  color: #1E4324;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.export-card-title {
+  font-size: 0.88rem;
+  font-weight: 750;
+  color: #17271A;
+  margin-bottom: 3px;
+}
+
+.export-card-desc {
+  font-size: 0.73rem;
+  color: #647567;
+  line-height: 1.35;
+}
+
+.export-scope-box {
+  background: #F7FAF6;
+  border: 1px solid #E1EADE;
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+
+.export-scope-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #2F4032;
+  margin-bottom: 8px;
+}
+
+.export-radio-row {
+  display: flex;
+  gap: 20px;
+}
+
+.export-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #293A2B;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   CUSTOM DATE PICKER MODAL
+   ========================================================================== */
+.custom-date-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.date-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.date-field-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #344737;
+}
+
+.date-input-styled {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  border: 1px solid #D2DDD0;
+  border-radius: 5px;
+  background: #FFFFFF;
+  color: #1E2D20;
+  outline: none;
+}
+
+.date-input-styled:focus {
+  border-color: #1E4324;
+}
+
+/* ==========================================================================
+   TACTICAL BRIEFING REPORT DOCUMENT PREVIEW (PRINT-READY)
+   ========================================================================== */
+.defense-briefing-doc {
+  background: #FFFFFF;
+  border: 1px solid #D7E1D5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  padding: 28px 32px;
+  color: #17271B;
+  font-family: 'Inter', -apple-system, sans-serif;
+  position: relative;
+}
+
+.briefing-doc-header {
+  border-bottom: 2px solid #1E4324;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.briefing-flag-bar {
+  display: flex;
+  height: 4px;
+  width: 100%;
+  margin-bottom: 14px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.flag-orange { background: #FF9933; flex: 1; }
+.flag-white { background: #FFFFFF; border-top: 1px solid #DDD; border-bottom: 1px solid #DDD; flex: 1; }
+.flag-green { background: #138808; flex: 1; }
+
+.briefing-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.briefing-org-title {
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: #112014;
+  letter-spacing: -0.01em;
+  margin: 0 0 3px 0;
+}
+
+.briefing-org-sub {
+  font-size: 0.72rem;
+  color: #5D6E60;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.briefing-stamp-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.stamp-classification {
+  background: #FAF0F0;
+  border: 1px solid #E8C8C8;
+  color: #C62828;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+
+.stamp-ref-no {
+  font-family: monospace;
+  font-size: 0.68rem;
+  color: #6C7D6F;
+}
+
+.briefing-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  background: #F6F9F5;
+  border: 1px solid #E4EDE2;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+}
+
+.briefing-meta-item .meta-lbl {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: #657767;
+  text-transform: uppercase;
+}
+
+.briefing-meta-item .meta-val {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #18281A;
+  margin-top: 2px;
+}
+
+.briefing-section-title {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #1E4324;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #E1ECE0;
+  padding-bottom: 5px;
+  margin: 18px 0 10px 0;
+}
+
+.briefing-kpi-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  margin-bottom: 16px;
+}
+
+.briefing-kpi-summary-table th {
+  background: #EDF3EC;
+  color: #2E4031;
+  font-weight: 700;
+  padding: 7px 10px;
+  text-align: left;
+  border: 1px solid #DDE6DB;
+}
+
+.briefing-kpi-summary-table td {
+  padding: 7px 10px;
+  border: 1px solid #E3EBE1;
+  color: #243526;
+}
+
+.briefing-sign-off-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  padding-top: 14px;
+  border-top: 1px dashed #D2DDD0;
+}
+
+.sign-off-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sign-off-line {
+  width: 180px;
+  height: 1px;
+  background: #A0B2A3;
+  margin-top: 24px;
+}
+
+.sign-off-title {
+  font-size: 0.7rem;
+  color: #607362;
+  font-weight: 600;
+}
+
+/* Print specific styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .defense-briefing-doc,
+  .defense-briefing-doc * {
+    visibility: visible;
+  }
+  .defense-briefing-doc {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+  }
+  .analytics-modal-backdrop {
+    background: none;
+    position: static;
+  }
+  .modal-header-tactical,
+  .modal-footer-actions {
+    display: none !important;
+  }
+}
+

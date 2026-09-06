@@ -1,0 +1,181 @@
+/* ==========================================================================
+   LOADING SCREEN STYLES — DUAL-PANEL SPLIT & CAMERA OUTLINE ANIMATION
+   ========================================================================== */
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  background-color: transparent !important;
+  overflow: hidden;
+  pointer-events: all;
+}
+
+.loading-filter-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Split Panels (Double-Door Behavior) */
+.split-panel {
+  position: absolute;
+  top: 0;
+  height: 100vh;
+  width: 50.1vw;
+  overflow: hidden;
+  background-color: var(--bg);
+  will-change: transform;
+}
+
+.left-panel {
+  left: 0;
+  border-right: 1px solid var(--border);
+}
+
+.right-panel {
+  left: 50vw;
+  border-left: 1px solid var(--border);
+}
+
+.panel-inner {
+  position: absolute;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel-inner-left {
+  left: 0;
+}
+
+.panel-inner-right {
+  left: -50vw;
+}
+
+/* Background Artwork */
+.loading-art-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 1;
+  filter: contrast(1.08) brightness(0.96);
+}
+
+/* Central Composition Frame */
+.loading-artwork-frame {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   MILITARY STENCIL / WEATHERED DISTRESSED TYPOGRAPHY
+   Aligned along exact center vertical axis with balanced optical letter-spacing
+   ========================================================================== */
+.loading-header-text {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  font-family: 'Anton', 'Oswald', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.2rem, 4.5vw, 5rem);
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent-green);
+  -webkit-text-stroke: 2px var(--accent-gold);
+  paint-order: stroke fill;
+  text-shadow: 
+    2px 2px 0px #000000,
+    3px 4px 0px #000000,
+    5px 6px 0px #000000,
+    7px 8px 0px #000000,
+    9px 10px 4px #000000,
+    12px 15px 25px rgba(0, 0, 0, 1),
+    0 0 35px rgba(0, 0, 0, 1);
+  filter: drop-shadow(6px 10px 14px rgba(0, 0, 0, 0.95)) url(#distress-weathered-filter);
+  z-index: 10;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.loading-footer-text {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  font-family: 'Anton', 'Oswald', sans-serif;
+  font-weight: 800;
+  font-size: clamp(3rem, 6vw, 6.8rem);
+  letter-spacing: 0.25em;
+  text-indent: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent-green);
+  -webkit-text-stroke: 2.5px var(--accent-gold);
+  paint-order: stroke fill;
+  text-shadow: 
+    2px 2px 0px #000000,
+    4px 5px 0px #000000,
+    6px 7px 0px #000000,
+    8px 10px 0px #000000,
+    11px 13px 4px #000000,
+    15px 18px 30px rgba(0, 0, 0, 1),
+    0 0 45px rgba(0, 0, 0, 1);
+  filter: drop-shadow(8px 12px 18px rgba(0, 0, 0, 0.95)) url(#distress-weathered-filter);
+  z-index: 10;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   SVG VECTOR ANIMATION CANVAS
+   ========================================================================== */
+.loading-svg-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Animated Lines & Camera Path */
+.anim-line {
+  stroke: var(--accent-green);
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  fill: none;
+  filter: drop-shadow(0 0 4px var(--accent-green-glow));
+}
+
+.anim-camera-path {
+  fill: none;
+  stroke: var(--accent-green);
+  stroke-width: 2.8px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px var(--accent-green-glow));
+}
+
+.anim-camera-path.completed-glow {
+  filter: drop-shadow(0 0 12px rgba(96, 116, 86, 0.95)) drop-shadow(0 0 24px rgba(96, 116, 86, 0.5));
+  transition: filter 0.8s ease-in-out;
+}

@@ -1,0 +1,87 @@
+/* ==========================================================================
+   IBVAP DESIGN SYSTEM — CORE TOKENS & BASE STYLES
+   Colors:
+   - Charcoal Background: #323435
+   - Military Olive Green: #607456
+   - Tactical Gold: #D4AF37
+   - Shadow / Depth: #000000
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #EEF0EA;
+  --panel: #FFFFFF;
+  --border: #E2E6DF;
+  --border-subtle: #EDF0EB;
+
+  --army-green: #1E4324;
+  --army-green-light: #E8F3EA;
+  --army-green-hover: #27572E;
+
+  --gold: #9E7D32;
+  --gold-bright: #B5903B;
+  --gold-dark: #785E22;
+
+  --text-primary: #1C281F;
+  --text-secondary: #687668;
+  --text-muted: #8B978C;
+
+  --critical: #E53935;
+  --high: #F57C00;
+  --medium: #D99516;
+  --low: #78909C;
+  --success: #2E7D32;
+
+  /* Theme mappings */
+  --bg-primary: var(--bg);
+  --bg-dark: var(--panel);
+  --bg-black: var(--bg);
+  --accent-gold: var(--gold);
+  --accent-gold-bright: var(--gold-bright);
+  --accent-green: var(--army-green);
+  --text-white: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  --border-khaki: var(--border);
+  --border-green: var(--border);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Common Keyframes */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .loading-overlay {
+    display: none !important;
+  }
+  .split-panel {
+    transition: none !important;
+  }
+  .anim-line, .anim-camera-path {
+    transition: none !important;
+  }
+}
