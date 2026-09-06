@@ -34,3 +34,6 @@ datasets/processed/
 # Generated evidence
 storage/evidence/
 storage/recordings/
+
+evidence/
+evidence_test/
