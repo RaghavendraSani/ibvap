@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -23,4 +23,8 @@ class Incident:
 
     metadata: Dict[str, Any] = field(
         default_factory=dict
+    )
+
+    evidence: List[Any] = field(
+        default_factory=list
     )

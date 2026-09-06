@@ -48,12 +48,6 @@ class SceneObject:
 
     watchlist_status: Optional[str] = None
 
-    # ---------------------------------------
-    # Face / identity information
-    # ---------------------------------------
-
-    identity: Optional[str] = None
-
 
 @dataclass
 class SceneState:

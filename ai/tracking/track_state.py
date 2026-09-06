@@ -18,9 +18,6 @@ class TrackState:
 
     zone: Optional[str] = None
 
-    face_status: str = "not_processed"
-    identity: Optional[str] = None
-
     loitering_status: bool = False
     intrusion_status: bool = False
 

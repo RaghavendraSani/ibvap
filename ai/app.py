@@ -12,7 +12,9 @@ from ai.tracking.track_manager import TrackManager
 from ai.tracking.tracker import ObjectTracker
 from ai.ui.zone_editor import ZoneEditor
 from ai.video.capture import VideoCapture
+
 from ai.incidents.manager import IncidentManager
+from ai.evidence.snapshot import SnapshotManager
 
 
 # ==========================================
@@ -51,6 +53,7 @@ def crop_object(frame, bbox):
 
     x1 = max(0, min(x1, width - 1))
     y1 = max(0, min(y1, height - 1))
+
     x2 = max(0, min(x2, width))
     y2 = max(0, min(y2, height))
 
@@ -164,130 +167,78 @@ def draw_scene(
         )
 
         # ==================================
-        # ANPR display
+        # ANPR information
         # ==================================
 
-        plate_y = min(
-            y2 + 20,
-            frame.shape[0] - 10,
+        plate_status = getattr(
+            obj,
+            "plate_status",
+            None,
         )
 
-        if obj.object_type in VEHICLE_CLASSES:
+        plate_number = getattr(
+            obj,
+            "plate_number",
+            None,
+        )
 
-            if obj.plate_status == "recognized":
+        if (
+            plate_status == "recognized"
+            and plate_number
+        ):
 
-                plate_text = (
-                    f"PLATE: {obj.plate_number}"
-                )
+            plate_text = (
+                f"PLATE: {plate_number}"
+            )
 
-                cv2.putText(
-                    frame,
-                    plate_text,
-                    (x1, plate_y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.55,
-                    (255, 255, 255),
-                    2,
-                )
+            cv2.putText(
+                frame,
+                plate_text,
+                (
+                    x1,
+                    min(
+                        y2 + 20,
+                        frame.shape[0] - 40,
+                    ),
+                ),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.55,
+                (255, 255, 0),
+                2,
+            )
 
-            elif obj.plate_status == "processing":
+    # ======================================
+    # Draw trajectories
+    # ======================================
 
-                cv2.putText(
-                    frame,
-                    "PLATE: processing...",
-                    (x1, plate_y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.50,
-                    (255, 255, 255),
-                    2,
-                )
+    for obj in scene.objects:
 
-            elif obj.plate_status == "plate_not_found":
+        trajectory = getattr(
+            obj,
+            "trajectory",
+            [],
+        )
 
-                cv2.putText(
-                    frame,
-                    "PLATE: not found",
-                    (x1, plate_y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.50,
-                    (255, 255, 255),
-                    2,
-                )
+        if len(trajectory) < 2:
+            continue
 
-            elif obj.plate_status == "plate_low_confidence":
-
-                cv2.putText(
-                    frame,
-                    "PLATE: low confidence",
-                    (x1, plate_y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.50,
-                    (255, 255, 255),
-                    2,
-                )
-
-            elif obj.plate_status == "ocr_failed":
-
-                cv2.putText(
-                    frame,
-                    "PLATE: OCR failed",
-                    (x1, plate_y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.50,
-                    (255, 255, 255),
-                    2,
-                )
-
-            elif obj.plate_status == "ocr_low_confidence":
-
-                cv2.putText(
-                    frame,
-                    "PLATE: OCR low confidence",
-                    (x1, plate_y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.50,
-                    (255, 255, 255),
-                    2,
-                )
-
-            elif obj.plate_status == "plate_crop_failed":
-
-                cv2.putText(
-                    frame,
-                    "PLATE: crop failed",
-                    (x1, plate_y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.50,
-                    (255, 255, 255),
-                    2,
-                )
-
-            elif obj.plate_status == "vehicle_crop_failed":
-
-                cv2.putText(
-                    frame,
-                    "PLATE: vehicle crop failed",
-                    (x1, plate_y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.50,
-                    (255, 255, 255),
-                    2,
-                )
-
-        # ==================================
-        # Trajectory
-        # ==================================
-
-        trajectory = obj.trajectory
-
-        for i in range(1, len(trajectory)):
+        for i in range(
+            1,
+            len(trajectory),
+        ):
 
             p1 = tuple(
-                map(int, trajectory[i - 1])
+                map(
+                    int,
+                    trajectory[i - 1],
+                )
             )
 
             p2 = tuple(
-                map(int, trajectory[i])
+                map(
+                    int,
+                    trajectory[i],
+                )
             )
 
             cv2.line(
@@ -304,7 +255,9 @@ def draw_scene(
 
     warning_y = 30
 
-    for track_id, message in active_intrusions.items():
+    for track_id, message in (
+        active_intrusions.items()
+    ):
 
         text = (
             f"INTRUSION: ID {track_id} - "
@@ -362,8 +315,13 @@ def main():
         "Starting IBVAP real-time pipeline..."
     )
 
-    print(f"Camera: {CAMERA_ID}")
-    print(f"Video source: {VIDEO_SOURCE}")
+    print(
+        f"Camera: {CAMERA_ID}"
+    )
+
+    print(
+        f"Video source: {VIDEO_SOURCE}"
+    )
 
     # ======================================
     # Initialize tracker
@@ -435,7 +393,9 @@ def main():
 
         else:
 
-            zones = [restricted_zone]
+            zones = [
+                restricted_zone
+            ]
 
             print(
                 f"Configured zone: "
@@ -458,10 +418,18 @@ def main():
         anpr_manager = ANPRManager()
 
         # ==================================
-        # Persistent intrusion state
+        # Incident manager
         # ==================================
 
         incident_manager = IncidentManager()
+
+        # ==================================
+        # Evidence / snapshot manager
+        # ==================================
+
+        snapshot_manager = SnapshotManager(
+            base_dir="evidence"
+        )
 
         # ==================================
         # FPS state
@@ -485,25 +453,25 @@ def main():
 
                 break
 
-            # ==================================
+            # =================================
             # Detection + tracking
-            # ==================================
+            # =================================
 
             tracked_objects = tracker.update(
                 frame
             )
 
-            # ==================================
+            # =================================
             # Track state management
-            # ==================================
+            # =================================
 
             tracks = track_manager.update(
                 tracked_objects
             )
 
-            # ==================================
+            # =================================
             # ANPR
-            # ==================================
+            # =================================
 
             for track in tracks.values():
 
@@ -519,16 +487,15 @@ def main():
                 )
 
                 if vehicle_crop is None:
+
                     track.plate_status = (
                         "vehicle_crop_failed"
                     )
+
                     continue
 
                 # ----------------------------------
-                # IMPORTANT:
-                #
-                # ANPR failure must NEVER terminate
-                # the surveillance pipeline.
+                # ANPR must never stop the pipeline.
                 # ----------------------------------
 
                 try:
@@ -546,14 +513,15 @@ def main():
 
                     print(
                         f"[ANPR] Track "
-                        f"{track.track_id} error: "
+                        f"{track.track_id} "
+                        f"error: "
                         f"{type(exc).__name__}: "
                         f"{exc}"
                     )
 
-            # ==================================
+            # =================================
             # Build scene
-            # ==================================
+            # =================================
 
             timestamp = time.time()
 
@@ -563,34 +531,110 @@ def main():
             )
 
             # Attach zones for visualization.
+
             scene.zones = zones
 
-            # ==================================
+            # =================================
             # Evaluate events
-            # ==================================
+            # =================================
 
             events = event_engine.evaluate(
                 scene
             )
 
-            # ==================================
+            # =================================
             # Incident lifecycle
-            # ==================================
+            # =================================
 
-            incident_manager.process_events(
-                events
+            existing_incident_ids = set(
+                incident_manager.incidents.keys()
             )
 
-            # ==================================
-            # Resolve incidents whose condition
-            # is no longer active
-            # ==================================
+            incidents = (
+                incident_manager.process_events(
+                    events
+                )
+            )
+
+            # =================================
+            # Evidence capture
+            # =================================
+
+            for incident in incidents:
+
+                # Only capture evidence for
+                # newly created incidents.
+
+                if (
+                    incident.incident_id
+                    in existing_incident_ids
+                ):
+                    continue
+
+                try:
+
+                    evidence = (
+                        snapshot_manager.capture(
+                            frame=frame,
+                            incident_id=(
+                                incident.incident_id
+                            ),
+                            event_type=(
+                                incident.event_type
+                            ),
+                            camera_id=(
+                                incident.camera_id
+                            ),
+                            track_id=(
+                                incident.track_id
+                            ),
+                            timestamp=timestamp,
+                        )
+                    )
+
+                    if evidence is not None:
+
+                        incident.evidence.append(
+                            evidence
+                        )
+
+                        print(
+                            "[EVIDENCE] Saved: "
+                            f"{evidence.image_path}"
+                        )
+
+                    else:
+
+                        print(
+                            "[EVIDENCE] Failed "
+                            f"for incident "
+                            f"{incident.incident_id}"
+                        )
+
+                except Exception as exc:
+
+                    # Evidence failure must NEVER
+                    # stop surveillance.
+
+                    print(
+                        "[EVIDENCE] Error for "
+                        f"{incident.incident_id}: "
+                        f"{type(exc).__name__}: "
+                        f"{exc}"
+                    )
+
+            # =================================
+            # Resolve intrusion incidents
+            # =================================
 
             for incident in list(
-                    incident_manager.get_active()
+                incident_manager.get_active()
             ):
 
-                if incident.event_type != "INTRUSION":
+                if (
+                    incident.event_type
+                    != "INTRUSION"
+                ):
                     continue
 
                 if incident.track_id is None:
@@ -600,8 +644,12 @@ def main():
                     incident.track_id
                 )
 
+                # --------------------------------
                 # Track completely disappeared.
+                # --------------------------------
+
                 if track is None:
+
                     incident_manager.resolve_track_event(
                         camera_id=CAMERA_ID,
                         event_type="INTRUSION",
@@ -611,21 +659,30 @@ def main():
 
                     continue
 
-                # Check whether the tracked object
-                # is still inside any restricted zone.
+                # --------------------------------
+                # Check whether the object is
+                # still inside a restricted zone.
+                # --------------------------------
+
                 still_inside = False
 
                 for zone in zones:
 
                     if point_in_polygon(
-                            track.center,
-                            zone.polygon,
+                        track.center,
+                        zone.polygon,
                     ):
+
                         still_inside = True
+
                         break
 
-                # Object left the restricted area.
+                # --------------------------------
+                # Object left restricted zone.
+                # --------------------------------
+
                 if not still_inside:
+
                     incident_manager.resolve_track_event(
                         camera_id=CAMERA_ID,
                         event_type="INTRUSION",
@@ -633,30 +690,36 @@ def main():
                         timestamp=timestamp,
                     )
 
-            # ==================================
+            # =================================
             # Build persistent intrusion display
-            # ==================================
+            # =================================
 
             active_intrusions = {}
 
-            for incident in incident_manager.get_active():
+            for incident in (
+                incident_manager.get_active()
+            ):
 
                 if (
-                        incident.event_type == "INTRUSION"
-                        and incident.track_id is not None
+                    incident.event_type
+                    == "INTRUSION"
+                    and incident.track_id
+                    is not None
                 ):
+
                     active_intrusions[
                         incident.track_id
                     ] = incident.message
 
-            # ==================================
+            # =================================
             # FPS
-            # ==================================
+            # =================================
 
             current_time = time.time()
 
             elapsed = (
-                current_time - previous_time
+                current_time
+                - previous_time
             )
 
             fps = (
@@ -667,9 +730,9 @@ def main():
 
             previous_time = current_time
 
-            # ==================================
-            # Draw scene
-            # ==================================
+            # =================================
+            # Draw visualization
+            # =================================
 
             draw_scene(
                 frame,
@@ -678,9 +741,9 @@ def main():
                 active_intrusions,
             )
 
-            # ==================================
+            # =================================
             # Statistics
-            # ==================================
+            # =================================
 
             object_count = len(
                 scene.objects
@@ -717,18 +780,18 @@ def main():
                 2,
             )
 
-            # ==================================
+            # =================================
             # Display
-            # ==================================
+            # =================================
 
             cv2.imshow(
                 "IBVAP - Real-Time AI",
                 frame,
             )
 
-            # ==================================
+            # =================================
             # Exit
-            # ==================================
+            # =================================
 
             if (
                 cv2.waitKey(1) & 0xFF
