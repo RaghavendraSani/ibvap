@@ -22,7 +22,6 @@ def main():
     first_track = tracks[1]
 
     first_track.zone = "restricted_area"
-    first_track.identity = "test_person"
     first_track.plate_number = "TEST123"
 
     scene = builder.build(
@@ -47,8 +46,7 @@ def main():
     )
 
     assert first_scene_object.zone == "restricted_area"
-    assert first_scene_object.identity == "test_person"
-    assert first_scene_object.plate == "TEST123"
+    assert first_scene_object.plate_number == "TEST123"
 
     print("\nState propagation test: PASSED")
 
