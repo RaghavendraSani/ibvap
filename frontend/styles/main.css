@@ -1,0 +1,17 @@
+/* ==========================================================================
+   IBVAP MILITARY COMMAND SUITE — MAIN STYLESHEET AGGREGATOR
+   Modular Architecture:
+   - base.css: Core design tokens, military palette, font imports, resets
+   - loading.css: Full-screen loading sequence, dual-panel split, SVG trace
+   - login.css: Military login terminal, restricted defense access card
+   - dashboard.css: Tactical command console, telemetry cards, live reticle
+   ========================================================================== */
+
+@import './base.css';
+@import './loading.css';
+@import './login.css';
+@import './dashboard.css';
+@import './analytics.css';
+@import './incidents.css';
+@import './system.css';
+@import './liveFeed.css';
