@@ -6,6 +6,7 @@
 import { LoadingScreen } from './loadingScreen.js';
 import { LoginScreen } from './loginScreen.js';
 import { Dashboard } from './dashboard.js';
+import { AiConnector } from './aiConnector.js';
 
 window.addEventListener('DOMContentLoaded', () => {
   console.log('[IBVAP] Bootstrapping Tactical Surveillance System...');
@@ -27,7 +28,17 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 2. Initialize LoginScreen Component (Hardcoded credentials: G103-BHU : 12345678)
+  // 2. Initialize Tactical AI Connector
+  const ai = new AiConnector();
+  ai.on('event', (incident) => {
+    dashboard.handleAiEvent(incident);
+  });
+  ai.on('telemetry', (telemetry) => {
+    dashboard.updateAnalytics(telemetry);
+  });
+  ai.connect();
+
+  // 3. Initialize LoginScreen Component (Hardcoded credentials: G103-BHU : 12345678)
   const loginScreen = new LoginScreen({
     container: loginRoot,
     requiredId: 'G103-BHU',
@@ -41,9 +52,18 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // Auto-restore authenticated session if previously logged in or hash is set
-  if (sessionStorage.getItem('ibvap-authenticated') === 'true' || location.hash === '#command' || location.hash === '#analytics') {
+  if (location.hash === '#incidents') {
     loginRoot.style.display = 'none';
     dashboard.show();
+    dashboard.switchView('incidents');
+  } else if (location.hash === '#analytics') {
+    loginRoot.style.display = 'none';
+    dashboard.show();
+    dashboard.switchView('analytics');
+  } else if (sessionStorage.getItem('ibvap-authenticated') === 'true' || location.hash === '#command') {
+    loginRoot.style.display = 'none';
+    dashboard.show();
+    dashboard.switchView('command');
   }
 
   // 3. Initialize & Mount Full-Screen Loading Screen Overlay

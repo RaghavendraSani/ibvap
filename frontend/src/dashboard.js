@@ -8,14 +8,16 @@
  */
 
 import { AnalyticsView } from './analyticsView.js';
+import { IncidentCenter } from './incidentCenter.js';
 
 export class Dashboard {
   constructor(options = {}) {
     this.container = options.container || document.getElementById('dashboard-root');
     this.onLockTerminal = options.onLockTerminal || null;
     this.onReplayIntro = options.onReplayIntro || null;
-    this.currentView = window.location.hash === '#analytics' ? 'analytics' : 'command';
+    this.currentView = window.location.hash === '#analytics' ? 'analytics' : (window.location.hash === '#incidents' ? 'incidents' : 'command');
     this.analyticsView = new AnalyticsView();
+    this.incidentCenter = null;
 
     // Default placeholder data matching reference screenshot
     this.analytics = {
@@ -35,6 +37,15 @@ export class Dashboard {
         serviceNo: 'G103-BHU'
       }
     };
+
+    this.availableFeeds = [
+      { id: 'CAM-034', sector: 'Sector B-17', coords: '19.3526° N, 77.6958° E' },
+      { id: 'CAM-021', sector: 'Sector C-04', coords: '19.4102° N, 77.7214° E' },
+      { id: 'CAM-012', sector: 'Sector A-08', coords: '19.2941° N, 77.6189° E' },
+      { id: 'CAM-017', sector: 'Sector D-03', coords: '19.4892° N, 77.8012° E' },
+      { id: 'CAM-026', sector: 'Sector B-09', coords: '19.3401° N, 77.6780° E' },
+      { id: 'CAM-019', sector: 'Sector A-12', coords: '19.2612° N, 77.5901° E' }
+    ];
 
     this.incidents = [
       {
@@ -106,6 +117,12 @@ export class Dashboard {
     this.render();
     this.bindEvents();
     this.startClock();
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.closeIncidentPopup();
+      }
+    });
   }
 
   render() {
@@ -167,7 +184,7 @@ export class Dashboard {
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
               <span>Incidents</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">7</span>
             </a>
 
             <a href="#system" class="nav-item" data-view="system">
@@ -281,10 +298,10 @@ export class Dashboard {
           </header>
 
           <!-- =================================================================
-               VIEW 1: COMMAND CONSOLE VIEW PANEL
+               VIEW 1: COMMAND DASHBOARD VIEW CONTAINER
                ================================================================= -->
-          <div id="view-command" class="dash-view-panel ${this.currentView === 'command' ? 'active' : ''}">
-            <!-- TOP ANALYTICS / KPI METRICS ROW (5 KPI CARDS) -->
+          <div id="view-command-container" class="dashboard-view-content dash-view-panel ${this.currentView === 'command' ? 'active' : ''}">
+            <!-- TOP ANALYTICS / KPI METRICS ROW (6 INDIVIDUAL CARDS) -->
             <section class="dash-metrics-row">
             <!-- 1. Active Cameras -->
             <div class="kpi-card">
@@ -412,7 +429,11 @@ export class Dashboard {
                       <span class="live-pulse-dot"></span>
                       <span class="live-text">LIVE</span>
                     </span>
-                    <span class="cam-id-tag">${this.analytics.cameraId} &nbsp;|&nbsp; ${this.analytics.sectorName}</span>
+                    <select id="dash-cam-feed-select" class="dash-cam-feed-select" title="Switch Active Surveillance Camera Feed">
+                      ${this.availableFeeds.map(f => `
+                        <option value="${f.id}" ${f.id === this.analytics.cameraId ? 'selected' : ''}>${f.id} &nbsp;|&nbsp; ${f.sector}</option>
+                      `).join('')}
+                    </select>
                   </div>
                   <div class="cam-coordinates">${this.analytics.coordinates}</div>
                 </div>
@@ -502,33 +523,8 @@ export class Dashboard {
                 </div>
 
                 <!-- Incident Items List separated by lines that don't touch edges -->
-                <div class="incident-list-scroll">
-                  ${this.incidents.map(item => `
-                    <div class="incident-list-item" data-id="${item.id}">
-                      <div class="incident-thumb-wrap">
-                        <img src="${item.thumb}" alt="${item.title}" class="incident-thumb-img" />
-                      </div>
-                      <div class="incident-details">
-                        <div class="incident-badge-row">
-                          <span class="incident-badge ${item.badgeClass}">${item.badge}</span>
-                          <span class="incident-title">${item.title}</span>
-                        </div>
-                        <div class="incident-sub">${item.subtitle}</div>
-                      </div>
-                      <div class="incident-meta">
-                        <div class="incident-time">${item.time}</div>
-                        <div class="incident-status ${item.statusClass}">
-                          <span class="status-dot"></span>
-                          <span>${item.status}</span>
-                        </div>
-                      </div>
-                      <div class="incident-chevron">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                      </div>
-                    </div>
-                  `).join('')}
+                <div class="incident-list-scroll" id="dash-incident-list-scroll">
+                  ${this.renderIncidentFeedHtml()}
                 </div>
               </div>
             </aside>
@@ -536,19 +532,41 @@ export class Dashboard {
         </div>
 
         <!-- =================================================================
-             VIEW 2: ANALYTICS & REPORTS VIEW PANEL
+             VIEW 2: ANALYTICS & REPORTS VIEW CONTAINER
              ================================================================= -->
-        <div id="view-analytics" class="dash-view-panel ${this.currentView === 'analytics' ? 'active' : ''}">
+        <div id="view-analytics-container" class="dashboard-view-content dash-view-panel ${this.currentView === 'analytics' ? 'active' : ''}">
           ${this.analyticsView.render()}
         </div>
+
+        <!-- =================================================================
+             VIEW 3: INCIDENT / ALERT CENTER VIEW CONTAINER
+             ================================================================= -->
+        <div id="view-incidents-container" class="dashboard-view-content dash-view-panel ${this.currentView === 'incidents' ? 'active' : ''}"></div>
       </div>
     </div>
   `;
-}
+
+    // Initialize and mount IncidentCenter component
+    const incRoot = this.container.querySelector('#view-incidents-container');
+    if (incRoot) {
+      this.incidentCenter = new IncidentCenter({
+        container: incRoot,
+        currentSector: this.analytics.sectorName,
+        currentCamera: this.analytics.cameraId,
+        onUnreadChange: (count) => {
+          this.setIncidentsUnreadCount(count);
+        },
+        onNavigate: (view) => {
+          this.switchView(view);
+        }
+      });
+      this.setIncidentsUnreadCount(this.incidentCenter.getUnreadCount());
+    }
+  }
 
   bindEvents() {
     // 0. Bind Analytics & Reports interactions
-    const analyticsContainer = this.container.querySelector('#view-analytics');
+    const analyticsContainer = this.container.querySelector('#view-analytics-container');
     if (analyticsContainer && this.analyticsView) {
       this.analyticsView.bindEvents(analyticsContainer);
     }
@@ -611,20 +629,42 @@ export class Dashboard {
       });
     }
 
-    // 6. Navigation tabs view switching (Command vs Analytics & Reports)
+    // Camera Feed Selector on Live Viewport
+    const camFeedSelect = this.container.querySelector('#dash-cam-feed-select');
+    if (camFeedSelect) {
+      camFeedSelect.addEventListener('change', (e) => {
+        const feed = this.availableFeeds.find(f => f.id === e.target.value);
+        if (feed) {
+          this.analytics.cameraId = feed.id;
+          this.analytics.sectorName = feed.sector;
+          this.analytics.coordinates = feed.coords;
+
+          const coordsEl = this.container.querySelector('.cam-coordinates');
+          if (coordsEl) coordsEl.textContent = feed.coords;
+
+          const perimSub = this.container.querySelector('.perimeter-sub');
+          if (perimSub) perimSub.textContent = feed.sector;
+
+          if (this.incidentCenter) {
+            this.incidentCenter.setCurrentFeed(feed.sector, feed.id);
+          }
+        }
+      });
+    }
+
+    // 6. Navigation tabs active state and view switching
     const navItems = this.container.querySelectorAll('.nav-item');
     navItems.forEach(item => {
       item.addEventListener('click', (e) => {
         e.preventDefault();
-        const view = item.getAttribute('data-view');
-        if (view === 'analytics' || view === 'command') {
+        const view = item.getAttribute('data-view') || item.dataset.view;
+        if (view === 'analytics' || view === 'command' || view === 'incidents') {
           this.switchView(view);
+        } else if (view === 'live-feed') {
+          this.switchView('command');
         } else {
           navItems.forEach(n => n.classList.remove('active'));
           item.classList.add('active');
-          if (view === 'live-feed') {
-            this.switchView('command');
-          }
         }
       });
     });
@@ -632,7 +672,7 @@ export class Dashboard {
     // Hash navigation listener
     window.addEventListener('hashchange', () => {
       const hash = window.location.hash.replace('#', '');
-      if (hash === 'analytics' || hash === 'command') {
+      if (hash === 'analytics' || hash === 'command' || hash === 'incidents') {
         if (this.currentView !== hash) {
           this.switchView(hash);
         }
@@ -650,66 +690,338 @@ export class Dashboard {
       });
     }
 
-    // 8. Incident item status toggle (interactive demonstration: toggling critical incidents updates threat level)
-    const incidentItems = this.container.querySelectorAll('.incident-list-item');
-    incidentItems.forEach(el => {
-      el.addEventListener('click', () => {
-        const id = parseInt(el.getAttribute('data-id'), 10);
-        const inc = this.incidents.find(i => i.id === id);
-        if (inc) {
-          inc.status = inc.status === 'Active' ? 'Resolved' : 'Active';
-          inc.statusClass = inc.status === 'Active' ? 'status-active' : 'status-resolved';
-          
-          const statusEl = el.querySelector('.incident-status');
-          if (statusEl) {
-            statusEl.className = `incident-status ${inc.statusClass}`;
-            statusEl.innerHTML = `
-              <span class="status-dot"></span>
-              <span>${inc.status}</span>
-            `;
-          }
+    // 8. Bind Live Incident Feed items to open blurred popup description
+    this.bindIncidentFeedEvents();
 
-          const activeCriticals = this.incidents.filter(i => i.badge === 'CRITICAL' && i.status === 'Active').length;
-          this.analytics.criticalAlerts = String(activeCriticals).padStart(2, '0');
-          const kpiCritical = this.container.querySelector('#kpi-critical-alerts');
-          if (kpiCritical) kpiCritical.textContent = this.analytics.criticalAlerts;
-
-          this.refreshThreatLevelUI();
-        }
+    // 9. Right Panel "View All →" Link
+    const btnViewAll = this.container.querySelector('#btn-view-all-incidents');
+    if (btnViewAll) {
+      btnViewAll.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.switchView('incidents');
       });
-    });
+    }
   }
 
-  /**
-   * Switch between Command and Analytics & Reports views
-   */
+  setIncidentsUnreadCount(count) {
+    const badge = this.container.querySelector('#sidebar-incidents-badge');
+    if (!badge) return;
+    if (count > 0) {
+      badge.textContent = count;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+
   switchView(viewName) {
     this.currentView = viewName;
+
+    // Update active state on navigation items
     const navItems = this.container.querySelectorAll('.nav-item');
     navItems.forEach(n => {
-      if (n.getAttribute('data-view') === viewName) {
+      const view = n.getAttribute('data-view') || n.dataset.view;
+      if (view === viewName) {
         n.classList.add('active');
       } else {
         n.classList.remove('active');
       }
     });
 
-    const cmdPanel = this.container.querySelector('#view-command');
-    const anPanel = this.container.querySelector('#view-analytics');
+    const commandView = this.container.querySelector('#view-command-container');
+    const analyticsView = this.container.querySelector('#view-analytics-container');
+    const incidentsView = this.container.querySelector('#view-incidents-container');
 
     if (viewName === 'analytics') {
-      if (cmdPanel) cmdPanel.classList.remove('active');
-      if (anPanel) anPanel.classList.add('active');
+      if (commandView) commandView.classList.remove('active');
+      if (incidentsView) incidentsView.classList.remove('active');
+      if (analyticsView) {
+        analyticsView.classList.add('active');
+      }
       if (window.location.hash !== '#analytics') {
         history.pushState(null, '', '#analytics');
       }
+    } else if (viewName === 'incidents') {
+      if (commandView) commandView.classList.remove('active');
+      if (analyticsView) analyticsView.classList.remove('active');
+      if (incidentsView) {
+        incidentsView.classList.add('active');
+        if (this.incidentCenter) {
+          this.incidentCenter.setCurrentFeed(this.analytics.sectorName, this.analytics.cameraId);
+          this.incidentCenter.render();
+        }
+      }
+      if (window.location.hash !== '#incidents') {
+        history.pushState(null, '', '#incidents');
+      }
     } else {
-      if (anPanel) anPanel.classList.remove('active');
-      if (cmdPanel) cmdPanel.classList.add('active');
+      // Default: 'command'
+      if (analyticsView) analyticsView.classList.remove('active');
+      if (incidentsView) incidentsView.classList.remove('active');
+      if (commandView) {
+        commandView.classList.add('active');
+      }
       if (window.location.hash !== '#command') {
         history.pushState(null, '', '#command');
       }
     }
+  }
+
+  handleAiEvent(event) {
+    if (this.incidentCenter) {
+      this.incidentCenter.addAiIncident(event);
+    }
+    const feedItem = {
+      id: event.id || `inc-${Date.now()}`,
+      thumb: event.thumb || '/assets/incident_1.jpg',
+      badge: event.severity || 'CRITICAL',
+      badgeClass: `badge-${(event.severity || 'critical').toLowerCase()}`,
+      title: event.title || event.eventType || 'Intrusion Detected',
+      subtitle: `${event.location || 'Sector B-17'} · Camera ${event.camera || 'CAM-034'}`,
+      time: event.time || new Date().toTimeString().split(' ')[0],
+      status: event.status === 'RESOLVED' ? 'Resolved' : 'Active',
+      statusClass: event.status === 'RESOLVED' ? 'status-resolved' : 'status-active'
+    };
+    this.incidents.unshift(feedItem);
+    if (this.incidents.length > 8) this.incidents.pop();
+    this.renderIncidentFeed();
+    this.refreshThreatLevelUI();
+  }
+
+  getTopPriorityIncidents(limit = 5) {
+    const list = (this.incidentCenter && this.incidentCenter.incidents && this.incidentCenter.incidents.length > 0)
+      ? this.incidentCenter.incidents
+      : this.incidents;
+
+    const severityWeight = { 'CRITICAL': 4, 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
+
+    return [...list].sort((a, b) => {
+      // Unresolved first
+      const aUnres = (a.status === 'UNRESOLVED' || a.status === 'Active') ? 1 : 0;
+      const bUnres = (b.status === 'UNRESOLVED' || b.status === 'Active') ? 1 : 0;
+      if (aUnres !== bUnres) return bUnres - aUnres;
+
+      // Severity weight descending
+      const aSev = severityWeight[(a.severity || a.badge || '').toUpperCase()] || 0;
+      const bSev = severityWeight[(b.severity || b.badge || '').toUpperCase()] || 0;
+      if (aSev !== bSev) return bSev - aSev;
+
+      // Newest detected time descending
+      const aTime = a.detectedTime || a.time || '';
+      const bTime = b.detectedTime || b.time || '';
+      return bTime.localeCompare(aTime);
+    }).slice(0, limit);
+  }
+
+  renderIncidentFeedHtml() {
+    const topItems = this.getTopPriorityIncidents(5);
+    return topItems.map(item => {
+      const badge = (item.severity || item.badge || 'CRITICAL').toUpperCase();
+      const badgeClass = `badge-${badge.toLowerCase()}`;
+      const title = item.eventType || item.title || 'Security Incident';
+      const subtitle = `${item.location || 'Sector B-17'} · Camera ${item.camera || 'CAM-034'}`;
+      const time = item.detectedTime || item.time || '22:41:08';
+      const isUnres = item.status === 'UNRESOLVED' || item.status === 'Active';
+      const statusText = isUnres ? 'Active' : 'Resolved';
+      const statusClass = isUnres ? 'status-active' : 'status-resolved';
+      const thumb = item.thumb || '/assets/incident_1.jpg';
+
+      return `
+        <div class="incident-list-item" data-id="${item.id}" title="Click to view details & description">
+          <div class="incident-thumb-wrap">
+            <img src="${thumb}" alt="${title}" class="incident-thumb-img" />
+          </div>
+          <div class="incident-details">
+            <div class="incident-badge-row">
+              <span class="incident-badge ${badgeClass}">${badge}</span>
+              <span class="incident-title">${title}</span>
+            </div>
+            <div class="incident-sub">${subtitle}</div>
+          </div>
+          <div class="incident-meta">
+            <div class="incident-time">${time}</div>
+            <div class="incident-status ${statusClass}">
+              <span class="status-dot"></span>
+              <span>${statusText}</span>
+            </div>
+          </div>
+          <div class="incident-chevron">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  renderIncidentFeed() {
+    const scroll = this.container.querySelector('#dash-incident-list-scroll');
+    if (!scroll) return;
+    scroll.innerHTML = this.renderIncidentFeedHtml();
+    this.bindIncidentFeedEvents();
+  }
+
+  bindIncidentFeedEvents() {
+    const scroll = this.container.querySelector('#dash-incident-list-scroll');
+    if (!scroll) return;
+    scroll.querySelectorAll('.incident-list-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.getAttribute('data-id');
+        this.showIncidentPopup(id);
+      });
+    });
+  }
+
+  showIncidentPopup(id) {
+    const list = (this.incidentCenter && this.incidentCenter.incidents && this.incidentCenter.incidents.length > 0)
+      ? this.incidentCenter.incidents
+      : this.incidents;
+
+    const inc = list.find(i => String(i.id) === String(id)) || list[0];
+    if (!inc) return;
+
+    let modalOverlay = document.getElementById('incident-popup-modal-overlay');
+    if (!modalOverlay) {
+      modalOverlay = document.createElement('div');
+      modalOverlay.id = 'incident-popup-modal-overlay';
+      modalOverlay.className = 'incident-popup-modal-overlay';
+      document.body.appendChild(modalOverlay);
+    }
+
+    const badge = (inc.severity || inc.badge || 'CRITICAL').toUpperCase();
+    const badgeClass = `badge-${badge.toLowerCase()}`;
+    const isUnres = inc.status === 'UNRESOLVED' || inc.status === 'Active';
+    const statusText = isUnres ? 'Unresolved' : 'Resolved';
+    const statusDotClass = isUnres ? 'dot-active' : 'dot-resolved';
+    const title = inc.eventType || inc.title || 'Security Incident';
+    const code = inc.code || `#INC-2026-0915-${inc.id}`;
+    const location = inc.location || 'Sector B-17';
+    const camera = inc.camera || 'CAM-034';
+    const time = inc.detectedTime || inc.time || '22:41:08';
+    const date = inc.date || '5 Sep 2026';
+    const coords = inc.coordinates || '19.3526° N, 77.6958° E';
+    const thumb = inc.thumb || '/assets/incident_1.jpg';
+    const desc = inc.description || 'Automated surveillance sensor tripped along boundary perimeter during restricted patrol hours.';
+    const objType = inc.objectType || 'Person';
+    const conf = inc.confidence || '94%';
+    const classif = inc.classification || 'Border Breach Alert';
+
+    modalOverlay.innerHTML = `
+      <div class="incident-modal-backdrop" id="incident-modal-backdrop"></div>
+      <div class="incident-modal-card" role="dialog" aria-modal="true">
+        <!-- Header -->
+        <div class="inc-modal-header">
+          <div class="inc-modal-header-left">
+            <span class="badge-sev ${badgeClass}">${badge}</span>
+            <span class="inc-modal-code font-mono">${code}</span>
+          </div>
+          <div class="inc-modal-header-right">
+            <span class="inc-modal-dot ${statusDotClass}"></span>
+            <span class="inc-modal-status-text">${statusText}</span>
+            <button id="btn-close-inc-modal" class="btn-inc-modal-close" title="Close Preview">✕</button>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="inc-modal-body">
+          <div class="inc-modal-title-row">
+            <h2 class="inc-modal-title">${title}</h2>
+            <div class="inc-modal-meta font-mono">
+              <span>${location}</span>
+              <span class="meta-dot">•</span>
+              <span>Camera ${camera}</span>
+              <span class="meta-dot">•</span>
+              <span>${date} &nbsp;${time}</span>
+              <span class="meta-dot">•</span>
+              <span>GPS ${coords}</span>
+            </div>
+          </div>
+
+          <div class="inc-modal-media-wrap">
+            <img src="${thumb}" alt="${title}" class="inc-modal-snapshot-img" />
+            <div class="inc-modal-live-tag">
+              <span class="live-pulse-dot"></span> LIVE SNAPSHOT
+            </div>
+            <div class="inc-modal-ai-tag font-mono">${objType} · ${conf}</div>
+          </div>
+
+          <div class="inc-modal-desc-box">
+            <div class="inc-modal-desc-label">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>INCIDENT DESCRIPTION</span>
+            </div>
+            <p class="inc-modal-desc-text">${desc}</p>
+          </div>
+
+          <div class="inc-modal-specs-grid">
+            <div class="inc-modal-spec-item">
+              <span class="spec-lbl">Classification</span>
+              <span class="spec-val">${classif}</span>
+            </div>
+            <div class="inc-modal-spec-item">
+              <span class="spec-lbl">Target Object</span>
+              <span class="spec-val">${objType}</span>
+            </div>
+            <div class="inc-modal-spec-item">
+              <span class="spec-lbl">AI Confidence</span>
+              <span class="spec-val font-mono" style="color: #2E7D32;">${conf}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="inc-modal-footer">
+          <button id="btn-modal-open-full" class="btn-modal-primary" title="Open full incident record in Incidents Centre">
+            <span>Open in Incidents Centre</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+          <button id="btn-modal-dismiss" class="btn-modal-secondary">
+            <span>${isUnres ? 'Acknowledge' : 'Dismiss'}</span>
+          </button>
+          <button id="btn-modal-cancel" class="btn-modal-outline">Close</button>
+        </div>
+      </div>
+    `;
+
+    modalOverlay.classList.add('visible');
+
+    const closeModal = () => {
+      modalOverlay.classList.remove('visible');
+    };
+
+    modalOverlay.querySelector('#btn-close-inc-modal')?.addEventListener('click', closeModal);
+    modalOverlay.querySelector('#btn-modal-cancel')?.addEventListener('click', closeModal);
+    modalOverlay.querySelector('#incident-modal-backdrop')?.addEventListener('click', closeModal);
+
+    modalOverlay.querySelector('#btn-modal-dismiss')?.addEventListener('click', () => {
+      if (this.incidentCenter) {
+        this.incidentCenter.acknowledgeIncident(inc.id);
+      }
+      inc.status = 'RESOLVED';
+      this.renderIncidentFeed();
+      this.refreshThreatLevelUI();
+      closeModal();
+    });
+
+    modalOverlay.querySelector('#btn-modal-open-full')?.addEventListener('click', () => {
+      closeModal();
+      this.switchView('incidents');
+      if (this.incidentCenter) {
+        this.incidentCenter.selectIncident(inc.id);
+      }
+    });
+  }
+
+  closeIncidentPopup() {
+    const modal = document.getElementById('incident-popup-modal-overlay');
+    if (modal) modal.classList.remove('visible');
   }
 
   /**
@@ -720,10 +1032,10 @@ export class Dashboard {
 
     const updateTime = () => {
       const now = new Date();
-      
+
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      
+
       const dayName = days[now.getDay()];
       const dayNum = now.getDate();
       const monthName = months[now.getMonth()];
@@ -842,11 +1154,11 @@ export class Dashboard {
     let criticalCount = 0;
     if (this.incidents && Array.isArray(this.incidents)) {
       criticalCount = this.incidents.filter(
-        inc => String(inc.badge).toUpperCase() === 'CRITICAL' && 
-               String(inc.status).toLowerCase() === 'active'
+        inc => String(inc.badge).toUpperCase() === 'CRITICAL' &&
+          String(inc.status).toLowerCase() === 'active'
       ).length;
     }
-    
+
     if (this.analytics && this.analytics.criticalAlerts !== undefined) {
       const parsed = parseInt(this.analytics.criticalAlerts, 10);
       if (!isNaN(parsed)) {
