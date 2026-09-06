@@ -142,6 +142,7 @@ export class LoginScreen {
 
   show() {
     if (this.container) {
+      this.container.style.display = 'flex';
       this.container.classList.remove('hidden');
       const passcodeInput = this.container.querySelector('#login-passcode');
       if (passcodeInput) passcodeInput.value = '';
@@ -151,6 +152,7 @@ export class LoginScreen {
   hide() {
     if (this.container) {
       this.container.classList.add('hidden');
+      this.container.style.display = 'none';
     }
   }
 }
